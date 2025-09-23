@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide #13: Technical Solutions to DCT Challenges | Decentralized Clinical Trials</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+
+        .slide-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 32px 64px rgba(0,0,0,0.12);
+            overflow: visible;
+            min-height: auto;
+            margin-bottom: 40px;
+        }
+
+        /* Header Section */
+        .slide-header {
+            background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
+            color: white;
+            padding: 50px 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border-radius: 24px 24px 0 0;
+        }
+
+        .slide-header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M20 20l8-8v-8l-8-8-8 8v8l8 8zm0-16l4 4v8l-4 4-4-4v-8l4-4z'/%3E%3C/g%3E%3C/svg%3E") repeat;
+        }
+
+        .slide-header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .slide-title {
+            font-size: 3.2rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #ffffff, #d1fae5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .talking-sentence {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            padding: 20px 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+            font-size: 1.2rem;
+            font-style: italic;
+            font-weight: 500;
+            margin-top: 20px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            max-width: 1000px;
+            margin: 20px auto 0;
+        }
+
+        /* Main Content */
+        .slide-content {
+            padding: 60px;
+            background: #ffffff;
+        }
+
+        /* Technical Pipeline Diagram */
+        .pipeline-container {
+            display: grid;
+            grid-template-columns: 280px 80px 400px 80px 280px;
+            grid-template-areas: "challenges arrow1 solutions arrow2 future";
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 40px;
+            gap: 0;
+            max-width: 1400px;
+        }
+
+        /* Left Side - Challenges */
+        .challenges-column {
+            grid-area: challenges;
+            background: linear-gradient(145deg, #fef2f2, #fee2e2);
+            border: 2px solid #f87171;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 24px rgba(248, 113, 113, 0.15);
+        }
+
+        .challenges-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #dc2626;
+            margin-bottom: 24px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .challenge-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-left: 4px solid #ef4444;
+            transition: all 0.3s ease;
+        }
+
+        .challenge-item:hover {
+            transform: translateX(8px);
+            box-shadow: 0 4px 16px rgba(248, 113, 113, 0.2);
+        }
+
+        .challenge-icon {
+            font-size: 1.5rem;
+            width: 32px;
+            text-align: center;
+        }
+
+        .challenge-text {
+            font-size: 0.9rem;
+            color: #7f1d1d;
+            font-weight: 600;
+        }
+
+        /* Flow Arrows */
+        .arrow-1 {
+            grid-area: arrow1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #3b82f6;
+            animation: flow-pulse 2s ease-in-out infinite;
+        }
+
+        .arrow-2 {
+            grid-area: arrow2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #10b981;
+            animation: flow-pulse 2s ease-in-out infinite;
+            animation-delay: 1s;
+        }
+
+        @keyframes flow-pulse {
+            0%, 100% { 
+                opacity: 0.6;
+                transform: scale(1);
+            }
+            50% { 
+                opacity: 1;
+                transform: scale(1.1);
+            }
+        }
+
+        /* Solutions Layer - Center */
+        .solutions-layer {
+            grid-area: solutions;
+            background: linear-gradient(145deg, #f0f9ff, #e0f2fe);
+            border: 3px solid #3b82f6;
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 12px 32px rgba(59, 130, 246, 0.2);
+            position: relative;
+        }
+
+        .solutions-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #1e40af;
+            margin-bottom: 24px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .solutions-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .solution-module {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border: 2px solid #cbd5e1;
+            transition: all 0.3s ease;
+            animation: module-glow 4s ease-in-out infinite;
+        }
+
+        .solution-module:hover {
+            transform: translateY(-4px);
+            border-color: #3b82f6;
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
+        }
+
+        .solution-module:nth-child(1) { animation-delay: 0s; }
+        .solution-module:nth-child(2) { animation-delay: 1s; }
+        .solution-module:nth-child(3) { animation-delay: 2s; }
+        .solution-module:nth-child(4) { animation-delay: 3s; }
+
+        @keyframes module-glow {
+            0%, 100% { 
+                border-color: #cbd5e1;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            }
+            50% { 
+                border-color: #93c5fd;
+                box-shadow: 0 6px 16px rgba(59, 130, 246, 0.12);
+            }
+        }
+
+        .module-icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+            color: #3b82f6;
+        }
+
+        .module-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .module-tech {
+            font-size: 0.8rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        /* Right Side - Future Platform */
+        .future-column {
+            grid-area: future;
+            background: linear-gradient(145deg, #f0fdf4, #dcfce7);
+            border: 2px solid #22c55e;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 24px rgba(34, 197, 94, 0.15);
+            text-align: center;
+        }
+
+        .future-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #15803d;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .future-platform {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+            border: 2px solid #22c55e;
+            animation: platform-success 3s ease-in-out infinite;
+        }
+
+        @keyframes platform-success {
+            0%, 100% { 
+                border-color: #22c55e;
+                box-shadow: 0 8px 24px rgba(34, 197, 94, 0.15);
+            }
+            50% { 
+                border-color: #16a34a;
+                box-shadow: 0 12px 32px rgba(34, 197, 94, 0.25);
+            }
+        }
+
+        .platform-icon {
+            font-size: 4rem;
+            color: #22c55e;
+            margin-bottom: 16px;
+            animation: success-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes success-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .platform-description {
+            color: #15803d;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        /* Solutions List */
+        .solutions-list {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 40px;
+            margin-top: 40px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .solutions-list-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 30px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .solutions-detailed-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            justify-items: start;
+            column-gap: 30px;
+        }
+
+        .solution-item:nth-child(odd) {
+            justify-self: end;
+        }
+
+        .solution-item {
+            width: 515px;
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-left: 4px solid #10b981;
+            transition: all 0.3s ease;
+            animation: solution-highlight 6s ease-in-out infinite;
+        }
+
+        .solution-item:nth-child(1) { animation-delay: 0s; }
+        .solution-item:nth-child(2) { animation-delay: 1s; }
+        .solution-item:nth-child(3) { animation-delay: 2s; }
+        .solution-item:nth-child(4) { animation-delay: 3s; }
+        .solution-item:nth-child(5) { animation-delay: 4s; }
+        .solution-item:nth-child(6) { animation-delay: 5s; }
+
+        @keyframes solution-highlight {
+            0%, 100% { 
+                border-left-color: #10b981;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            }
+            20% { 
+                border-left-color: #059669;
+                box-shadow: 0 6px 16px rgba(16, 185, 129, 0.15);
+            }
+        }
+
+        .solution-item:hover {
+            transform: translateX(8px);
+            border-left-color: #059669;
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.15);
+        }
+
+        .solution-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .solution-icon {
+            font-size: 1.2rem;
+            color: #10b981;
+        }
+
+        .solution-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .solution-description {
+            color: #64748b;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-left: 32px;
+            padding-right: 0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .pipeline-container {
+                grid-template-columns: 1fr;
+                grid-template-areas: 
+                    "challenges"
+                    "solutions"
+                    "future";
+                gap: 30px;
+            }
+            
+            .arrow-1, .arrow-2 {
+                display: none;
+            }
+            
+            .solutions-detailed-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .slide-header {
+                padding: 40px 30px;
+            }
+            
+            .slide-title {
+                font-size: 2.5rem;
+            }
+            
+            .slide-content {
+                padding: 40px 30px;
+            }
+            
+            .talking-sentence {
+                font-size: 1.1rem;
+                padding: 18px 25px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .slide-title {
+                font-size: 2rem;
+            }
+            
+            .solution-item {
+                padding: 20px;
+            }
+            
+            .solutions-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <!-- Header -->
+        <div class="slide-header">
+            <div class="slide-header-content">
+                <h1 class="slide-title">⚙️ Technical Solutions to DCT Challenges</h1>
+                <div class="talking-sentence">
+                    "These technical strategies — from API-first interoperability to compliance automation — are already helping sponsors scale decentralized trials responsibly."
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="slide-content">
+            <!-- Technical Pipeline Diagram -->
+            <div class="pipeline-container">
+                <!-- Left Side: Challenges -->
+                <div class="challenges-column">
+                    <h3 class="challenges-title">
+                        <span>⚠️</span>
+                        Current Challenges
+                    </h3>
+                    
+                    <div class="challenge-item">
+                        <div class="challenge-icon">🗄️</div>
+                        <div class="challenge-text">Legacy Database Systems</div>
+                    </div>
+                    
+                    <div class="challenge-item">
+                        <div class="challenge-icon">📋</div>
+                        <div class="challenge-text">Compliance Documentation</div>
+                    </div>
+                    
+                    <div class="challenge-item">
+                        <div class="challenge-icon">🗺️</div>
+                        <div class="challenge-text">Multi-site Coordination</div>
+                    </div>
+                    
+                    <div class="challenge-item">
+                        <div class="challenge-icon">🔗</div>
+                        <div class="challenge-text">System Integration Issues</div>
+                    </div>
+                </div>
+
+                <!-- Arrow 1 -->
+                <div class="arrow-1">→</div>
+
+                <!-- Center: Solutions Layer -->
+                <div class="solutions-layer">
+                    <h3 class="solutions-title">
+                        <span>🔧</span>
+                        Solutions Layer
+                    </h3>
+                    
+                    <div class="solutions-grid">
+                        <div class="solution-module">
+                            <div class="module-icon">🔌</div>
+                            <div class="module-title">API Gateway</div>
+                            <div class="module-tech">FHIR/CDISC</div>
+                        </div>
+                        
+                        <div class="solution-module">
+                            <div class="module-icon">🛡️</div>
+                            <div class="module-title">Security Engine</div>
+                            <div class="module-tech">Compliance</div>
+                        </div>
+                        
+                        <div class="solution-module">
+                            <div class="module-icon">📊</div>
+                            <div class="module-title">Data Quality</div>
+                            <div class="module-tech">ETL Pipeline</div>
+                        </div>
+                        
+                        <div class="solution-module">
+                            <div class="module-icon">☁️</div>
+                            <div class="module-title">Cloud Infrastructure</div>
+                            <div class="module-tech">Kubernetes</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Arrow 2 -->
+                <div class="arrow-2">→</div>
+
+                <!-- Right Side: Future Platform -->
+                <div class="future-column">
+                    <h3 class="future-title">
+                        <span>✅</span>
+                        Future-Ready DCT
+                    </h3>
+                    
+                    <div class="future-platform">
+                        <div class="platform-icon">👤✓</div>
+                        <div class="platform-description">
+                            Patient-Centric Platform
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Solutions List -->
+            <div class="solutions-list">
+                <h2 class="solutions-list-title">
+                    <span>🎯</span>
+                    Technical Implementation Strategies
+                </h2>
+                
+                <div class="solutions-detailed-grid">
+                    <div class="solution-item">
+                        <div class="solution-header">
+                            <span class="solution-icon">🔄</span>
+                            <span class="solution-title">Hybrid Models</span>
+                        </div>
+                        <div class="solution-description">
+                            On-site + remote data capture with configurable visit windows
+                        </div>
+                    </div>
+                    
+                    <div class="solution-item">
+                        <div class="solution-header">
+                            <span class="solution-icon">🔗</span>
+                            <span class="solution-title">Interoperable Platforms</span>
+                        </div>
+                        <div class="solution-description">
+                            HL7 FHIR, CDISC ODM/SDTM, API-first design
+                        </div>
+                    </div>
+                    
+                    <div class="solution-item">
+                        <div class="solution-header">
+                            <span class="solution-icon">🌍</span>
+                            <span class="solution-title">Global Compliance</span>
+                        </div>
+                        <div class="solution-description">
+                            Privacy-by-design, automated GDPR/HIPAA checks
+                        </div>
+                    </div>
+                    
+                    <div class="solution-item">
+                        <div class="solution-header">
+                            <span class="solution-icon">✅</span>
+                            <span class="solution-title">Data Quality & Validation</span>
+                        </div>
+                        <div class="solution-description">
+                            Real-time anomaly detection, schema enforcement
+                        </div>
+                    </div>
+                    
+                    <div class="solution-item">
+                        <div class="solution-header">
+                            <span class="solution-icon">🔧</span>
+                            <span class="solution-title">Legacy Integration</span>
+                        </div>
+                        <div class="solution-description">
+                            Secure middleware, ETL pipelines, API wrappers
+                        </div>
+                    </div>
+                    
+                    <div class="solution-item">
+                        <div class="solution-header">
+                            <span class="solution-icon">📈</span>
+                            <span class="solution-title">Scalability</span>
+                        </div>
+                        <div class="solution-description">
+                            Containerized microservices, cloud-native orchestration (K8s)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add interactive data flow visualization
+        document.addEventListener('DOMContentLoaded', function() {
+            const challengeItems = document.querySelectorAll('.challenge-item');
+            const solutionModules = document.querySelectorAll('.solution-module');
+            const solutionItems = document.querySelectorAll('.solution-item');
+            
+            // Challenge items interaction
+            challengeItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const text = this.querySelector('.challenge-text').textContent;
+                    alert(`Challenge: ${text}\n\nThis challenge is addressed by our technical solutions pipeline.`);
+                });
+            });
+            
+            // Solution modules click for details
+            solutionModules.forEach(module => {
+                module.addEventListener('click', function() {
+                    const title = this.querySelector('.module-title').textContent;
+                    const tech = this.querySelector('.module-tech').textContent;
+                    alert(`${title}\nTechnology: ${tech}\n\nClick to explore implementation details...`);
+                });
+            });
+            
+            // Solution items with enhanced interactions
+            solutionItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const title = this.querySelector('.solution-title').textContent;
+                    const description = this.querySelector('.solution-description').textContent;
+                    alert(`${title}\n\n${description}\n\nImplementation strategy details...`);
+                });
+            });
+
+            // Future platform interaction
+            document.querySelector('.future-platform').addEventListener('click', function() {
+                alert('🎯 Future-Ready DCT Platform\n\nPatient-centric, scalable, and compliant platform ready for global deployment.');
+            });
+        });
+    </script>
+</body>
+</html>
