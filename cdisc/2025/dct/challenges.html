@@ -142,6 +142,12 @@
             background-size: 100px 4px;
             background-position: center;
             opacity: 0.6;
+            animation: gentle-road-flow 8s linear infinite;
+        }
+
+        @keyframes gentle-road-flow {
+            0% { background-position-x: 0; }
+            100% { background-position-x: 100px; }
         }
 
         .road-curve {
@@ -181,9 +187,15 @@
             border-radius: 16px;
             font-size: 1.1rem;
             font-weight: 700;
-            box-shadow: 0 8px 24px rgba(248, 113, 113, 0.4);
+            box-shadow: 0 8px 24px rgba(202, 71, 52, 0.4);
             z-index: 10;
             white-space: nowrap;
+            animation: gentle-glow 4s ease-in-out infinite;
+        }
+
+        @keyframes gentle-glow {
+            0%, 100% { box-shadow: 0 8px 24px rgba(202, 71, 52, 0.4); }
+            50% { box-shadow: 0 12px 32px rgba(202, 71, 52, 0.6); }
         }
 
         /* Goal Point */
@@ -202,6 +214,18 @@
             z-index: 20;
             white-space: nowrap;
             min-width: 140px;
+            animation: success-beacon 3s ease-in-out infinite;
+        }
+
+        @keyframes success-beacon {
+            0%, 100% { 
+                box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+                transform: translateY(-50%) scale(1);
+            }
+            50% { 
+                box-shadow: 0 12px 36px rgba(16, 185, 129, 0.6);
+                transform: translateY(-50%) scale(1.02);
+            }
         }
 
         /* Roadblocks */
@@ -217,21 +241,36 @@
             z-index: 15;
             text-align: center;
             width: 192px;
+            animation: subtle-warning 5s ease-in-out infinite;
+        }
+
+        @keyframes subtle-warning {
+            0%, 100% { 
+                border-color: #ef4444;
+                box-shadow: 0 12px 32px rgba(239, 68, 68, 0.15);
+            }
+            50% { 
+                border-color: #dc2626;
+                box-shadow: 0 16px 40px rgba(239, 68, 68, 0.25);
+            }
         }
 
         .roadblock-1 {
             left: 26%;
             transform: translateX(-50%) translateY(-50%);
+            animation-delay: 0s;
         }
 
         .roadblock-2 {
             left: 50%;
             transform: translateX(-50%) translateY(-50%);
+            animation-delay: 1.5s;
         }
 
         .roadblock-3 {
             left: 74%;
             transform: translateX(-50%) translateY(-50%);
+            animation-delay: 3s;
         }
 
         .roadblock-icon {
@@ -270,21 +309,36 @@
             color: white;
             font-weight: bold;
             box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+            animation: warning-pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes warning-pulse {
+            0%, 100% { 
+                opacity: 0.9;
+                box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+            }
+            50% { 
+                opacity: 1;
+                box-shadow: 0 6px 20px rgba(251, 191, 36, 0.6);
+            }
         }
 
         .warning-1 {
             top: 15%;
             left: 23%;
+            animation-delay: 0.5s;
         }
 
         .warning-2 {
             top: 15%;
             left: 48%;
+            animation-delay: 2s;
         }
 
         .warning-3 {
             top: 15%;
             left: 72%;
+            animation-delay: 3.5s;
         }
 
         .warning-sign span {
@@ -327,6 +381,7 @@
             font-size: 3rem;
             color: #475569;
             opacity: 0.7;
+            animation: storm-drift 6s ease-in-out infinite;
         }
 
         .storm-cloud-2 {
@@ -336,6 +391,19 @@
             font-size: 2.5rem;
             color: #64748b;
             opacity: 0.6;
+            animation: storm-drift 8s ease-in-out infinite;
+            animation-delay: 2s;
+        }
+
+        @keyframes storm-drift {
+            0%, 100% { 
+                transform: translateX(0) translateY(0);
+                opacity: 0.7;
+            }
+            50% { 
+                transform: translateX(10px) translateY(-5px);
+                opacity: 0.9;
+            }
         }
 
         /* Rain drops */
@@ -344,11 +412,35 @@
             color: #64748b;
             font-size: 1rem;
             opacity: 0.4;
+            animation: rain-fall 3s ease-in-out infinite;
         }
 
-        .rain-1 { top: 25%; left: 8%; }
-        .rain-2 { top: 28%; left: 15%; }
-        .rain-3 { top: 30%; left: 20%; }
+        .rain-1 { 
+            top: 25%; 
+            left: 8%; 
+            animation-delay: 0s;
+        }
+        .rain-2 { 
+            top: 28%; 
+            left: 15%; 
+            animation-delay: 1s;
+        }
+        .rain-3 { 
+            top: 30%; 
+            left: 20%; 
+            animation-delay: 2s;
+        }
+
+        @keyframes rain-fall {
+            0%, 100% { 
+                transform: translateY(0);
+                opacity: 0.4;
+            }
+            50% { 
+                transform: translateY(8px);
+                opacity: 0.7;
+            }
+        }
 
         /* Partly cloudy in middle */
         .partial-cloud {
@@ -358,6 +450,18 @@
             font-size: 2.5rem;
             color: #9ca3af;
             opacity: 0.5;
+            animation: cloud-float 7s ease-in-out infinite;
+        }
+
+        @keyframes cloud-float {
+            0%, 100% { 
+                transform: translateX(0) translateY(0);
+                opacity: 0.5;
+            }
+            50% { 
+                transform: translateX(8px) translateY(-3px);
+                opacity: 0.7;
+            }
         }
 
         /* Sun on right */
@@ -368,6 +472,20 @@
             font-size: 3.5rem;
             color: #fbbf24;
             opacity: 0.8;
+            animation: sun-shine 4s ease-in-out infinite;
+        }
+
+        @keyframes sun-shine {
+            0%, 100% { 
+                opacity: 0.8;
+                transform: scale(1) rotate(0deg);
+                filter: brightness(1);
+            }
+            50% { 
+                opacity: 1;
+                transform: scale(1.05) rotate(5deg);
+                filter: brightness(1.2);
+            }
         }
 
         .sun-rays {
@@ -377,6 +495,18 @@
             font-size: 2rem;
             color: #fcd34d;
             opacity: 0.6;
+            animation: rays-twinkle 2s ease-in-out infinite;
+        }
+
+        @keyframes rays-twinkle {
+            0%, 100% { 
+                opacity: 0.6;
+                transform: scale(1) rotate(0deg);
+            }
+            50% { 
+                opacity: 1;
+                transform: scale(1.1) rotate(15deg);
+            }
         }
 
         .cloud {
