@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide #12: Challenges on the Path to DCTs | Decentralized Clinical Trials</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+            color: #1e293b;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .slide-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 32px 64px rgba(0,0,0,0.12);
+            overflow: visible;
+            min-height: auto;
+            margin-bottom: 40px;
+        }
+
+        /* Header Section */
+        .slide-header {
+            background: linear-gradient(135deg, #dc2626 0%, #ef4444 50%, #f87171 100%);
+            color: white;
+            padding: 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border-radius: 24px 24px 0 0;
+        }
+
+        .slide-header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M20 5l-5 10h10l-5-10zm0 25l5-10H15l5 10z'/%3E%3C/g%3E%3C/svg%3E") repeat;
+        }
+
+        .slide-header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .slide-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 30px;
+            background: linear-gradient(45deg, #ffffff, #fecaca);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .talking-sentence {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            padding: 24px 40px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+            font-size: 1.4rem;
+            font-style: italic;
+            font-weight: 500;
+            margin-top: 30px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            max-width: 900px;
+            margin: 30px auto 0;
+        }
+
+        /* Main Content - Road Journey */
+        .slide-content {
+            padding: 80px 60px;
+            background: 
+                linear-gradient(90deg, 
+                    #ffffff 0%, 
+                    rgba(71, 85, 105, 0.05) 15%, 
+                    rgba(100, 116, 139, 0.03) 50%, 
+                    rgba(254, 240, 138, 0.05) 85%, 
+                    #ffffff 100%
+                ),
+                linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+            position: relative;
+            min-height: 600px;
+        }
+
+        /* Road Path */
+        .road-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            margin: 0 auto;
+            padding: 0 80px;
+        }
+
+        .road-path {
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            right: 10px;
+            height: 120px;
+            background: linear-gradient(135deg, #6b7280, #9ca3af);
+            border-radius: 60px;
+            transform: translateY(-50%);
+            box-shadow: 
+                inset 0 8px 16px rgba(0,0,0,0.3),
+                0 4px 12px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .road-surface {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(
+                    90deg,
+                    transparent 0%,
+                    transparent 48%,
+                    #ffffff 48%,
+                    #ffffff 52%,
+                    transparent 52%,
+                    transparent 100%
+                );
+            background-size: 100px 4px;
+            background-position: center;
+            opacity: 0.6;
+        }
+
+        .road-curve {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 120px;
+            transform: translateY(-50%);
+            background: none;
+        }
+
+        .road-curve::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 20%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(135deg, #6b7280, #9ca3af);
+            border-radius: 60px;
+            transform: rotate(-2deg);
+            box-shadow: 
+                inset 0 8px 16px rgba(0,0,0,0.3),
+                0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        /* Starting Point */
+        .start-point {
+            position: absolute;
+            left: 2%;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #ca4734;
+            color: white;
+            padding: 14px 20px;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            box-shadow: 0 8px 24px rgba(248, 113, 113, 0.4);
+            z-index: 10;
+            white-space: nowrap;
+        }
+
+        /* Goal Point */
+        .goal-point {
+            position: absolute;
+            right: 2%;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 16px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+            z-index: 20;
+            white-space: nowrap;
+            min-width: 140px;
+        }
+
+        /* Roadblocks */
+        .roadblock {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: white;
+            border-radius: 16px;
+            padding: 20px 16px;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+            border: 3px solid #ef4444;
+            z-index: 15;
+            text-align: center;
+            width: 192px;
+        }
+
+        .roadblock-1 {
+            left: 26%;
+            transform: translateX(-50%) translateY(-50%);
+        }
+
+        .roadblock-2 {
+            left: 50%;
+            transform: translateX(-50%) translateY(-50%);
+        }
+
+        .roadblock-3 {
+            left: 74%;
+            transform: translateX(-50%) translateY(-50%);
+        }
+
+        .roadblock-icon {
+            font-size: 3.5rem;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .roadblock-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #dc2626;
+            margin-bottom: 6px;
+            line-height: 1.2;
+        }
+
+        .roadblock-subtitle {
+            font-size: 0.85rem;
+            color: #6b7280;
+            font-weight: 500;
+            line-height: 1.3;
+        }
+
+        /* Warning Signs */
+        .warning-sign {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            transform: rotate(45deg);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+        }
+
+        .warning-1 {
+            top: 15%;
+            left: 23%;
+        }
+
+        .warning-2 {
+            top: 15%;
+            left: 48%;
+        }
+
+        .warning-3 {
+            top: 15%;
+            left: 72%;
+        }
+
+        .warning-sign span {
+            transform: rotate(-45deg);
+        }
+
+
+        /* Environmental Elements */
+        .environment {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        /* Weather Elements */
+        .weather-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                rgba(71, 85, 105, 0.3) 0%,     /* Stormy left */
+                rgba(100, 116, 139, 0.2) 30%,   /* Overcast */
+                rgba(156, 163, 175, 0.1) 60%,   /* Clearing */
+                rgba(254, 240, 138, 0.1) 100%   /* Sunny right */
+            );
+            z-index: 1;
+        }
+
+        /* Storm clouds on left */
+        .storm-cloud {
+            position: absolute;
+            top: 8%;
+            left: 5%;
+            font-size: 3rem;
+            color: #475569;
+            opacity: 0.7;
+        }
+
+        .storm-cloud-2 {
+            position: absolute;
+            top: 12%;
+            left: 12%;
+            font-size: 2.5rem;
+            color: #64748b;
+            opacity: 0.6;
+        }
+
+        /* Rain drops */
+        .rain-drop {
+            position: absolute;
+            color: #64748b;
+            font-size: 1rem;
+            opacity: 0.4;
+        }
+
+        .rain-1 { top: 25%; left: 8%; }
+        .rain-2 { top: 28%; left: 15%; }
+        .rain-3 { top: 30%; left: 20%; }
+
+        /* Partly cloudy in middle */
+        .partial-cloud {
+            position: absolute;
+            top: 10%;
+            left: 45%;
+            font-size: 2.5rem;
+            color: #9ca3af;
+            opacity: 0.5;
+        }
+
+        /* Sun on right */
+        .sun {
+            position: absolute;
+            top: 8%;
+            right: 8%;
+            font-size: 3.5rem;
+            color: #fbbf24;
+            opacity: 0.8;
+        }
+
+        .sun-rays {
+            position: absolute;
+            top: 12%;
+            right: 12%;
+            font-size: 2rem;
+            color: #fcd34d;
+            opacity: 0.6;
+        }
+
+        .cloud {
+            position: absolute;
+            background: #f3f4f6;
+            border-radius: 50px;
+            opacity: 0.6;
+        }
+
+        .cloud::before,
+        .cloud::after {
+            content: '';
+            position: absolute;
+            background: #f3f4f6;
+            border-radius: 50px;
+        }
+
+        .cloud-1 {
+            top: 10%;
+            left: 20%;
+            width: 80px;
+            height: 30px;
+        }
+
+        .cloud-1::before {
+            top: -15px;
+            left: 15px;
+            width: 40px;
+            height: 40px;
+        }
+
+        .cloud-1::after {
+            top: -10px;
+            right: 15px;
+            width: 25px;
+            height: 25px;
+        }
+
+        .cloud-2 {
+            top: 15%;
+            left: 70%;
+            width: 60px;
+            height: 25px;
+        }
+
+        .cloud-2::before {
+            top: -12px;
+            left: 12px;
+            width: 35px;
+            height: 35px;
+        }
+
+        .cloud-2::after {
+            top: -8px;
+            right: 12px;
+            width: 20px;
+            height: 20px;
+        }
+
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .roadblock {
+                min-width: 160px;
+                padding: 20px;
+            }
+            
+            .roadblock-icon {
+                font-size: 3rem;
+            }
+            
+            .roadblock-title {
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .slide-header {
+                padding: 40px 30px;
+            }
+            
+            .slide-title {
+                font-size: 2.8rem;
+            }
+            
+            .slide-content {
+                padding: 60px 30px;
+            }
+            
+            .road-container {
+                height: 400px;
+            }
+            
+            .roadblock {
+                position: relative;
+                margin: 20px auto;
+                transform: none;
+                left: auto;
+                right: auto;
+            }
+            
+            .roadblock-1,
+            .roadblock-2,
+            .roadblock-3 {
+                position: relative;
+                left: auto;
+                right: auto;
+                transform: none;
+                margin: 30px auto;
+                display: block;
+            }
+            
+            .road-path {
+                display: none;
+            }
+            
+            .warning-sign {
+                display: none;
+            }
+            
+            .talking-sentence {
+                font-size: 1.2rem;
+                padding: 20px 30px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .slide-title {
+                font-size: 2.2rem;
+            }
+            
+            .roadblock {
+                min-width: 140px;
+                padding: 16px;
+            }
+            
+            .roadblock-icon {
+                font-size: 2.5rem;
+            }
+            
+            .roadblock-title {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <!-- Header -->
+        <div class="slide-header">
+            <div class="slide-header-content">
+                <h1 class="slide-title">🚧 Challenges on the Path to DCTs</h1>
+                <div class="talking-sentence">
+                    "Of course, it's not all smooth sailing. These challenges must be tackled head-on."
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content - Road Journey -->
+        <div class="slide-content">
+            <div class="road-container">
+                <!-- Environment -->
+                <div class="environment">
+                    <!-- Weather Layer -->
+                    <div class="weather-layer"></div>
+                    
+                    <!-- Storm Weather (Left) -->
+                    <div class="storm-cloud">⛈️</div>
+                    <div class="storm-cloud-2">☁️</div>
+                    <div class="rain-drop rain-1">💧</div>
+                    <div class="rain-drop rain-2">💧</div>
+                    <div class="rain-drop rain-3">💧</div>
+                    
+                    <!-- Partial Clouds (Middle) -->
+                    <div class="partial-cloud">⛅</div>
+                    
+                    <!-- Sunny Weather (Right) -->
+                    <div class="sun">☀️</div>
+                    <div class="sun-rays">✨</div>
+                    
+                    <!-- Original clouds -->
+                    <div class="cloud cloud-1"></div>
+                    <div class="cloud cloud-2"></div>
+                </div>
+
+                <!-- Road Path -->
+                <div class="road-path">
+                    <div class="road-surface"></div>
+                </div>
+
+                <!-- Starting Point -->
+                <div class="start-point">
+                    🚀 Current State
+                </div>
+
+                <!-- Warning Signs -->
+                <div class="warning-sign warning-1">
+                    <span>⚠️</span>
+                </div>
+                <div class="warning-sign warning-2">
+                    <span>⚠️</span>
+                </div>
+                <div class="warning-sign warning-3">
+                    <span>⚠️</span>
+                </div>
+
+                <!-- Roadblock 1: Scalability -->
+                <div class="roadblock roadblock-1">
+                    <div class="roadblock-icon">🚧</div>
+                    <div class="roadblock-title">Scalability</div>
+                    <div class="roadblock-subtitle">Multi-site environments</div>
+                </div>
+
+                <!-- Roadblock 2: Legacy Systems -->
+                <div class="roadblock roadblock-2">
+                    <div class="roadblock-icon">⚙️</div>
+                    <div class="roadblock-title">Legacy Systems</div>
+                    <div class="roadblock-subtitle">Integration complexity</div>
+                </div>
+
+                <!-- Roadblock 3: Regulatory -->
+                <div class="roadblock roadblock-3">
+                    <div class="roadblock-icon">📜</div>
+                    <div class="roadblock-title">Regulatory</div>
+                    <div class="roadblock-subtitle">Evolving uncertainty</div>
+                </div>
+
+                <!-- Goal Point -->
+                <div class="goal-point">
+                    🎯 DCT Future
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple click interactions without animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add goal point interaction
+            document.querySelector('.goal-point').addEventListener('click', function() {
+                alert('🎯 DCT Future: The destination where all challenges are overcome through innovative solutions and collaborative effort!');
+            });
+
+            // Add start point interaction
+            document.querySelector('.start-point').addEventListener('click', function() {
+                alert('🚀 Current State: Traditional clinical trials with centralized approaches and established processes.');
+            });
+
+            // Add roadblock click interactions
+            document.querySelectorAll('.roadblock').forEach(roadblock => {
+                roadblock.addEventListener('click', function() {
+                    const title = this.querySelector('.roadblock-title').textContent;
+                    const subtitle = this.querySelector('.roadblock-subtitle').textContent;
+                    alert(`${title}: ${subtitle}`);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
