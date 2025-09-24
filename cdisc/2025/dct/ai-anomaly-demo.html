@@ -1,0 +1,1888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Monitoring Dashboard Demo | DCT Live Oversight</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: #e2e8f0;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .demo-container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .demo-header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+        }
+
+        .demo-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ffffff, #dbeafe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .ai-brain-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #60a5fa, #3b82f6, #1d4ed8);
+            border-radius: 50%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 0 20px rgba(96, 165, 250, 0.5),
+                inset 0 2px 4px rgba(255, 255, 255, 0.2);
+            animation: brain-activity 3s ease-in-out infinite;
+        }
+
+        @keyframes brain-activity {
+            0%, 100% { 
+                box-shadow: 0 0 20px rgba(96, 165, 250, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.2);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 0 30px rgba(96, 165, 250, 0.8), inset 0 2px 4px rgba(255, 255, 255, 0.3);
+                transform: scale(1.02);
+            }
+        }
+
+        .ai-brain-icon::before {
+            content: '';
+            position: absolute;
+            top: 20%;
+            left: 30%;
+            width: 8px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            animation: synapse-1 2s ease-in-out infinite;
+        }
+
+        .ai-brain-icon::after {
+            content: '';
+            position: absolute;
+            bottom: 25%;
+            right: 30%;
+            width: 6px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: synapse-2 2s ease-in-out infinite 0.5s;
+        }
+
+        @keyframes synapse-1 {
+            0%, 100% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.5); }
+        }
+
+        @keyframes synapse-2 {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.3); }
+        }
+
+        .neural-network-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        .neural-path {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 1px;
+            animation: neural-signal 4s ease-in-out infinite;
+        }
+
+        .neural-path:nth-child(1) {
+            width: 20px;
+            height: 1px;
+            top: 30%;
+            left: -10px;
+            transform: rotate(15deg);
+        }
+
+        .neural-path:nth-child(2) {
+            width: 18px;
+            height: 1px;
+            bottom: 35%;
+            right: -9px;
+            transform: rotate(-15deg);
+            animation-delay: 1s;
+        }
+
+        .neural-path:nth-child(3) {
+            width: 1px;
+            height: 25px;
+            bottom: -12px;
+            left: 40%;
+            animation-delay: 2s;
+        }
+
+        @keyframes neural-signal {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 0.6; }
+        }
+
+        .demo-subtitle {
+            font-size: 1.2rem;
+            color: #bfdbfe;
+            font-weight: 400;
+        }
+
+        /* Main Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        /* Patient List Panel */
+        .patient-panel {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .panel-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #60a5fa;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-indicator {
+            background: #10b981;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            animation: status-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes status-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Patient Cards */
+        .patients-grid {
+            display: grid;
+            gap: 12px;
+            max-height: 694px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        /* Scrollbar styling */
+        .patients-grid::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .patients-grid::-webkit-scrollbar-track {
+            background: rgba(51, 65, 85, 0.3);
+            border-radius: 3px;
+        }
+
+        .patients-grid::-webkit-scrollbar-thumb {
+            background: rgba(59, 130, 246, 0.5);
+            border-radius: 3px;
+        }
+
+        .patients-grid::-webkit-scrollbar-thumb:hover {
+            background: rgba(59, 130, 246, 0.7);
+        }
+
+        .patient-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(71, 85, 105, 0.5);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .patient-card:hover {
+            background: rgba(30, 41, 59, 0.8);
+            border-color: rgba(59, 130, 246, 0.5);
+            transform: translateX(4px);
+        }
+
+        .patient-card.alert {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+            animation: alert-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes alert-glow {
+            0%, 100% { box-shadow: 0 0 8px rgba(239, 68, 68, 0.3); }
+            50% { box-shadow: 0 0 16px rgba(239, 68, 68, 0.6); }
+        }
+
+        .patient-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .patient-id {
+            font-weight: 700;
+            color: #e2e8f0;
+        }
+
+        .alert-badge {
+            background: #ef4444;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            animation: badge-blink 1s ease-in-out infinite;
+        }
+
+        @keyframes badge-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .vitals-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .vital-item {
+            text-align: center;
+            padding: 8px;
+            background: rgba(51, 65, 85, 0.3);
+            border-radius: 8px;
+        }
+
+        .vital-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        .vital-item.anomaly .vital-value {
+            color: #ef4444;
+            animation: anomaly-flash 1s ease-in-out infinite;
+        }
+
+        @keyframes anomaly-flash {
+            0%, 100% { color: #ef4444; }
+            50% { color: #fca5a5; }
+        }
+
+        .vital-label {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+
+        /* Risk Heatmap Panel */
+        .heatmap-panel {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .site-cell {
+            background: #10b981;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .site-cell:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .site-cell.medium-risk {
+            background: #f59e0b;
+        }
+
+        .site-cell.medium-risk {
+            background: #f59e0b;
+        }
+
+        .site-cell.high-risk {
+            background: #ef4444;
+            animation: high-risk-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes high-risk-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .risk-indicator {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 12px;
+            height: 12px;
+            background: #fbbf24;
+            border-radius: 50%;
+            animation: indicator-blink 1.5s ease-in-out infinite;
+        }
+
+        @keyframes indicator-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Risk Legend */
+        .risk-legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 16px 0;
+            padding: 12px;
+            background: rgba(51, 65, 85, 0.3);
+            border-radius: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: #e2e8f0;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+        .legend-color.low-risk { background: #10b981; }
+        .legend-color.medium-risk { background: #f59e0b; }
+        .legend-color.high-risk { background: #ef4444; }
+
+        /* Risk Summary Stats */
+        .risk-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .summary-stat {
+            text-align: center;
+            background: rgba(51, 65, 85, 0.3);
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #60a5fa;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        /* Risk Alerts */
+        .risk-alerts {
+            background: rgba(51, 65, 85, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 16px;
+        }
+
+        .alert-header {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .risk-alert-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 6px;
+            margin-bottom: 4px;
+            font-size: 0.8rem;
+        }
+
+        .alert-time {
+            color: #94a3b8;
+            font-weight: 600;
+            min-width: 40px;
+        }
+
+        .alert-text {
+            color: #e2e8f0;
+        }
+
+        /* AI Analysis Panel */
+        .analysis-panel {
+            grid-column: 1 / -1;
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .analysis-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .analysis-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #c084fc;
+        }
+
+        .ai-status {
+            background: #7c3aed;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            animation: ai-processing 2s ease-in-out infinite;
+        }
+
+        @keyframes ai-processing {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .analysis-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .anomaly-chart {
+            background: rgba(51, 65, 85, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+        }
+
+        .chart-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 12px;
+        }
+
+        .chart-container {
+            height: 120px;
+            background: rgba(51, 65, 85, 0.3);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+        }
+
+        .live-chart {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .chart-line {
+            position: absolute;
+            bottom: 0;
+            width: 2px;
+            background: #10b981;
+            border-radius: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .chart-line.anomaly {
+            background: #ef4444;
+            animation: anomaly-alert 1s ease-in-out infinite;
+        }
+
+        @keyframes anomaly-alert {
+            0%, 100% { opacity: 1; transform: scaleY(1); }
+            50% { opacity: 0.7; transform: scaleY(1.1); }
+        }
+
+        .chart-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(71, 85, 105, 0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(71, 85, 105, 0.2) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .chart-labels {
+            position: absolute;
+            left: -40px;
+            top: 0;
+            bottom: 0;
+            width: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: #94a3b8;
+        }
+
+        .model-output {
+            background: rgba(51, 65, 85, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+        }
+
+        .confidence-meter {
+            background: rgba(71, 85, 105, 0.3);
+            border-radius: 8px;
+            height: 12px;
+            margin: 8px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            background: linear-gradient(90deg, #10b981, #f59e0b, #ef4444);
+            height: 100%;
+            width: 87%;
+            border-radius: 8px;
+            animation: confidence-update 2s ease-in-out infinite;
+        }
+
+        @keyframes confidence-update {
+            0%, 100% { width: 87%; }
+            50% { width: 92%; }
+        }
+
+        /* Alert Modal */
+        .alert-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: modal-fade-in 0.3s ease;
+        }
+
+        @keyframes modal-fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: #1e293b;
+            border: 2px solid #ef4444;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            animation: modal-slide-up 0.3s ease;
+        }
+
+        @keyframes modal-slide-up {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Info Modal */
+        .info-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: modal-fade-in 0.3s ease;
+        }
+
+        .info-modal-content {
+            background: #1e293b;
+            border: 2px solid #3b82f6;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            animation: modal-slide-up 0.3s ease;
+        }
+
+        .info-modal-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .info-icon {
+            background: #3b82f6;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .info-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #60a5fa;
+        }
+
+        .info-content {
+            color: #e2e8f0;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .alert-icon {
+            background: #ef4444;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            animation: alert-rotate 2s ease-in-out infinite;
+        }
+
+        @keyframes alert-rotate {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(10deg); }
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ef4444;
+        }
+
+        .modal-timestamp {
+            background: #ef4444;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            margin-left: auto;
+        }
+
+        .patient-timeline {
+            background: rgba(51, 65, 85, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+        }
+
+        .timeline-header {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 16px;
+        }
+
+        .timeline-chart {
+            height: 80px;
+            background: linear-gradient(90deg, 
+                #10b981 0%, #10b981 70%, 
+                #f59e0b 75%, #ef4444 85%, #ef4444 100%);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 60%;
+            background: white;
+            border-radius: 2px;
+        }
+
+        .marker-1 { left: 20%; }
+        .marker-2 { left: 40%; }
+        .marker-3 { left: 60%; }
+        .marker-4 { left: 80%; animation: current-marker 1s ease-in-out infinite; }
+
+        @keyframes current-marker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .close-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+
+        /* Control Panel */
+        .control-panel {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .control-btn {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .control-btn.danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .control-btn.danger:hover {
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .analysis-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .demo-container {
+                padding: 10px;
+            }
+            
+            .demo-title {
+                font-size: 2rem;
+            }
+            
+            .modal-content {
+                padding: 20px;
+            }
+            
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <!-- Header -->
+        <div class="demo-header">
+            <h1 class="demo-title">
+                <div class="ai-brain-icon">
+                    <div class="neural-network-bg">
+                        <div class="neural-path"></div>
+                        <div class="neural-path"></div>
+                        <div class="neural-path"></div>
+                    </div>
+                </div>
+                AI Monitoring Dashboard
+            </h1>
+            <p class="demo-subtitle">Live DCT Oversight with Anomaly Detection</p>
+        </div>
+
+        <!-- Main Dashboard -->
+        <div class="dashboard-grid">
+            <!-- Patient List Panel -->
+            <div class="patient-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <span>👥</span>
+                        Patient Monitoring
+                    </h2>
+                    <div class="status-indicator">Live</div>
+                </div>
+                
+                <div class="patients-grid" id="patientsGrid">
+                    <!-- Patients will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Risk Heatmap Panel -->
+            <div class="heatmap-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <span>🌡️</span>
+                        Site Risk Heatmap
+                    </h2>
+                    <div class="status-indicator">AI Active</div>
+                </div>
+                
+                <div class="heatmap-grid" id="heatmapGrid">
+                    <!-- Sites will be populated by JavaScript -->
+                </div>
+                
+                <!-- Risk Legend -->
+                <div class="risk-legend">
+                    <div class="legend-item">
+                        <div class="legend-color low-risk"></div>
+                        <span>Low Risk</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color medium-risk"></div>
+                        <span>Medium Risk</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color high-risk"></div>
+                        <span>High Risk</span>
+                    </div>
+                </div>
+                
+                <!-- Risk Summary Stats -->
+                <div class="risk-summary">
+                    <div class="summary-stat">
+                        <div class="stat-value" id="lowRiskCount">5</div>
+                        <div class="stat-label">Low Risk Sites</div>
+                    </div>
+                    <div class="summary-stat">
+                        <div class="stat-value" id="mediumRiskCount">2</div>
+                        <div class="stat-label">Medium Risk</div>
+                    </div>
+                    <div class="summary-stat">
+                        <div class="stat-value" id="highRiskCount">1</div>
+                        <div class="stat-label">High Risk</div>
+                    </div>
+                </div>
+                
+                <!-- Real-time Risk Alerts -->
+                <div class="risk-alerts">
+                    <div class="alert-header">
+                        <span>🚨</span>
+                        <span>Recent Risk Changes</span>
+                    </div>
+                    <div class="alert-list" id="riskAlerts">
+                        <div class="risk-alert-item">
+                            <span class="alert-time">14:32:15</span>
+                            <span class="alert-text">Site 04 elevated to HIGH risk</span>
+                        </div>
+                        <div class="risk-alert-item">
+                            <span class="alert-time">14:15:42</span>
+                            <span class="alert-text">Site 07 compliance check pending</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Analysis Panel -->
+            <div class="analysis-panel">
+                <div class="analysis-header">
+                    <span>🧠</span>
+                    <h2 class="analysis-title">AI Anomaly Detection</h2>
+                    <div class="ai-status">Processing</div>
+                </div>
+                
+                <div class="analysis-content">
+                    <div class="anomaly-chart">
+                        <div class="chart-title">
+                            Live Heart Rate Stream
+                            <select id="patientSelector" style="margin-left: 12px; background: #334155; color: #e2e8f0; border: 1px solid #475569; border-radius: 6px; padding: 4px 8px; font-size: 0.8rem;">
+                                <option value="204">Patient #204 (Anomaly)</option>
+                                <option value="101">Patient #101</option>
+                                <option value="102">Patient #102</option>
+                                <option value="103">Patient #103</option>
+                                <option value="105">Patient #105</option>
+                                <option value="106">Patient #106</option>
+                            </select>
+                        </div>
+                        <div class="chart-container">
+                            <div class="chart-grid"></div>
+                            <div class="chart-labels">
+                                <span>200</span>
+                                <span>150</span>
+                                <span>100</span>
+                                <span>50</span>
+                            </div>
+                            <div class="live-chart" id="liveChart"></div>
+                        </div>
+                        <div style="text-align: center; margin-top: 8px; font-size: 0.8rem; color: #94a3b8;">
+                            <span id="currentTime"></span> | Real-time Data Stream
+                            <span id="selectedPatientInfo" style="margin-left: 16px;"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="model-output">
+                        <div class="chart-title">AI Model Status</div>
+                        <div>Anomaly Score: <span id="anomalyScore" style="color: #ef4444; font-weight: 700;">87%</span></div>
+                        <div class="confidence-meter">
+                            <div class="confidence-fill" id="confidenceFill"></div>
+                        </div>
+                        <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 8px;">
+                            Model: Isolation Forest + LSTM
+                        </div>
+                        <div style="margin-top: 12px; padding: 8px; background: rgba(71, 85, 105, 0.2); border-radius: 8px;">
+                            <div style="font-size: 0.8rem; color: #94a3b8;">Last Analysis:</div>
+                            <div id="lastAnalysis" style="font-size: 0.9rem; color: #e2e8f0;">Monitoring baseline...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <h3 class="panel-title">
+                <span>⚙️</span>
+                Demo Controls
+            </h3>
+            <div class="controls-grid">
+                <button class="control-btn" onclick="generateNormalData()">
+                    📊 Generate Normal Data
+                </button>
+                <button class="control-btn danger" onclick="injectAnomaly()">
+                    ⚠️ Inject Anomaly
+                </button>
+                <button class="control-btn" id="streamToggleBtn" onclick="toggleStreaming()">
+                    ⏸️ Pause Stream
+                </button>
+                <button class="control-btn" onclick="resetDemo()">
+                    🔄 Reset Demo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Modal -->
+    <div class="alert-modal" id="alertModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="alert-icon">⚠️</div>
+                <div class="modal-title">Critical Anomaly Detected</div>
+                <div class="modal-timestamp" id="alertTimestamp"></div>
+            </div>
+            
+            <div id="alertDetails"></div>
+            
+            <div class="patient-timeline">
+                <div class="timeline-header">Patient Timeline - Last 4 Hours</div>
+                <div class="timeline-chart">
+                    <div class="timeline-marker marker-1"></div>
+                    <div class="timeline-marker marker-2"></div>
+                    <div class="timeline-marker marker-3"></div>
+                    <div class="timeline-marker marker-4"></div>
+                </div>
+            </div>
+            
+            <button class="close-btn" onclick="closeAlert()">Close Alert</button>
+        </div>
+    </div>
+
+    <!-- Info Modal -->
+    <div class="info-modal" id="infoModal">
+        <div class="info-modal-content">
+            <div class="info-modal-header">
+                <div class="info-icon" id="infoIcon">ℹ️</div>
+                <div class="info-title" id="infoTitle">Information</div>
+            </div>
+            
+            <div class="info-content" id="infoContent"></div>
+            
+            <button class="close-btn" onclick="closeInfo()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced patient data with history
+        let patients = [
+            { 
+                id: 101, hr: 72, bp: "120/80", activity: 8520, status: "normal",
+                history: [], baseline: { hr: 72, systolic: 120, diastolic: 80 },
+                lastUpdate: Date.now(), trend: "stable"
+            },
+            { 
+                id: 102, hr: 68, bp: "118/76", activity: 9240, status: "normal",
+                history: [], baseline: { hr: 68, systolic: 118, diastolic: 76 },
+                lastUpdate: Date.now(), trend: "stable"
+            },
+            { 
+                id: 103, hr: 75, bp: "125/82", activity: 7650, status: "normal",
+                history: [], baseline: { hr: 75, systolic: 125, diastolic: 82 },
+                lastUpdate: Date.now(), trend: "stable"
+            },
+            { 
+                id: 204, hr: 180, bp: "160/95", activity: 12400, status: "anomaly",
+                history: [], baseline: { hr: 72, systolic: 120, diastolic: 80 },
+                lastUpdate: Date.now(), trend: "critical_increase"
+            },
+            { 
+                id: 105, hr: 70, bp: "115/75", activity: 8900, status: "normal",
+                history: [], baseline: { hr: 70, systolic: 115, diastolic: 75 },
+                lastUpdate: Date.now(), trend: "stable"
+            },
+            { 
+                id: 106, hr: 73, bp: "122/78", activity: 7800, status: "normal",
+                history: [], baseline: { hr: 73, systolic: 122, diastolic: 78 },
+                lastUpdate: Date.now(), trend: "stable"
+            }
+        ];
+
+        // Real-time data storage
+        let chartData = [];
+        let isStreaming = true;
+        let streamingInterval;
+        let analysisInterval;
+        let selectedPatientId = '204'; // Default to anomaly patient
+
+        // Site risk data
+        let sites = [
+            { id: "Site 01", risk: "low" },
+            { id: "Site 02", risk: "medium" },
+            { id: "Site 03", risk: "low" },
+            { id: "Site 04", risk: "high" },
+            { id: "Site 05", risk: "low" },
+            { id: "Site 06", risk: "low" },
+            { id: "Site 07", risk: "medium" },
+            { id: "Site 08", risk: "low" }
+        ];
+
+        // Advanced AI Anomaly Detection Engine
+        class EnhancedAnomalyDetector {
+            constructor() {
+                this.normalRanges = {
+                    hr: { min: 60, max: 100 },
+                    systolic: { min: 90, max: 140 },
+                    diastolic: { min: 60, max: 90 },
+                    activity: { min: 5000, max: 15000 }
+                };
+                this.modelHistory = [];
+                this.trainingData = this.generateTrainingData();
+            }
+
+            generateTrainingData() {
+                // Generate 1000 normal data points for training
+                const data = [];
+                for (let i = 0; i < 1000; i++) {
+                    data.push({
+                        hr: 60 + Math.random() * 40 + Math.sin(i * 0.1) * 5,
+                        systolic: 90 + Math.random() * 30 + Math.sin(i * 0.05) * 8,
+                        diastolic: 60 + Math.random() * 20 + Math.sin(i * 0.03) * 5,
+                        timestamp: Date.now() - (1000 - i) * 60000
+                    });
+                }
+                return data;
+            }
+
+            isolationForestScore(dataPoint) {
+                // Simplified Isolation Forest implementation
+                let isolationScore = 0;
+                const features = ['hr', 'systolic', 'diastolic'];
+                
+                features.forEach(feature => {
+                    const values = this.trainingData.map(d => d[feature]);
+                    const mean = values.reduce((a, b) => a + b) / values.length;
+                    const std = Math.sqrt(values.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / values.length);
+                    
+                    const zscore = Math.abs((dataPoint[feature] - mean) / std);
+                    isolationScore += zscore;
+                });
+                
+                return Math.min(1, isolationScore / 6); // Normalize to 0-1
+            }
+
+            lstmPrediction(patient) {
+                // Simplified LSTM-like prediction based on recent history
+                if (patient.history.length < 3) return 0;
+                
+                const recent = patient.history.slice(-3);
+                const trend = recent[2].hr - recent[0].hr;
+                const volatility = Math.max(...recent.map(r => r.hr)) - Math.min(...recent.map(r => r.hr));
+                
+                return Math.min(1, (Math.abs(trend) + volatility) / 100);
+            }
+
+            detectAnomalies(patient) {
+                const anomalies = [];
+                const [systolic, diastolic] = patient.bp.split('/').map(Number);
+                
+                // Isolation Forest analysis
+                const isolationScore = this.isolationForestScore({
+                    hr: patient.hr,
+                    systolic: systolic,
+                    diastolic: diastolic
+                });
+
+                // LSTM trend analysis
+                const lstmScore = this.lstmPrediction(patient);
+                
+                // Combined anomaly score
+                const combinedScore = Math.max(isolationScore, lstmScore);
+                const confidence = Math.round(combinedScore * 100);
+                
+                if (patient.hr < this.normalRanges.hr.min || patient.hr > this.normalRanges.hr.max) {
+                    anomalies.push({
+                        type: "Heart Rate",
+                        value: patient.hr,
+                        severity: patient.hr > 150 ? "critical" : "warning",
+                        confidence: confidence,
+                        isolationScore: Math.round(isolationScore * 100),
+                        lstmScore: Math.round(lstmScore * 100),
+                        baseline: patient.baseline.hr
+                    });
+                }
+                
+                if (systolic > this.normalRanges.systolic.max || diastolic > this.normalRanges.diastolic.max) {
+                    anomalies.push({
+                        type: "Blood Pressure",
+                        value: patient.bp,
+                        severity: systolic > 160 ? "critical" : "warning",
+                        confidence: confidence,
+                        isolationScore: Math.round(isolationScore * 100),
+                        lstmScore: Math.round(lstmScore * 100),
+                        baseline: `${patient.baseline.systolic}/${patient.baseline.diastolic}`
+                    });
+                }
+                
+                return { anomalies, confidence, isolationScore, lstmScore };
+            }
+        }
+
+        const detector = new EnhancedAnomalyDetector();
+
+        // Real-time chart rendering
+        function renderLiveChart() {
+            const chart = document.getElementById('liveChart');
+            const currentTime = document.getElementById('currentTime');
+            
+            // Update timestamp
+            currentTime.textContent = new Date().toLocaleTimeString();
+            
+            // Get selected patient or use composite data
+            const selectedPatient = patients.find(p => p.id.toString() === selectedPatientId);
+            
+            if (selectedPatient) {
+                const dataPoint = {
+                    timestamp: Date.now(),
+                    value: selectedPatient.hr,
+                    isAnomaly: selectedPatient.status === 'anomaly',
+                    patientId: selectedPatient.id
+                };
+                
+                chartData.push(dataPoint);
+                
+                // Keep only last 50 data points
+                if (chartData.length > 50) {
+                    chartData.shift();
+                }
+            }
+            
+            // Clear and redraw chart
+            chart.innerHTML = '';
+            
+            chartData.forEach((point, index) => {
+                const line = document.createElement('div');
+                line.className = `chart-line ${point.isAnomaly ? 'anomaly' : ''}`;
+                line.style.left = `${(index / 49) * 100}%`;
+                line.style.height = `${Math.max(5, (point.value / 200) * 100)}%`;
+                line.title = `Patient #${point.patientId}: ${point.value} bpm at ${new Date(point.timestamp).toLocaleTimeString()}`;
+                chart.appendChild(line);
+            });
+        }
+
+        // Handle patient selector change
+        function onPatientSelectionChange() {
+            const selector = document.getElementById('patientSelector');
+            selectedPatientId = selector.value;
+            
+            // Clear chart data when switching patients
+            chartData = [];
+            
+            // Update AI analysis for selected patient
+            const selectedPatient = patients.find(p => p.id.toString() === selectedPatientId);
+            if (selectedPatient) {
+                updateAIAnalysisForPatient(selectedPatient);
+            }
+        }
+
+        // Enhanced real-time data streaming
+        function startRealTimeStream() {
+            streamingInterval = setInterval(() => {
+                // Update patient vitals with realistic variations
+                patients.forEach(patient => {
+                    // Store current state in history
+                    patient.history.push({
+                        hr: patient.hr,
+                        bp: patient.bp,
+                        timestamp: Date.now()
+                    });
+                    
+                    // Keep only last 10 history entries
+                    if (patient.history.length > 10) {
+                        patient.history.shift();
+                    }
+                    
+                    if (patient.status === 'normal') {
+                        // Normal variation around baseline
+                        const hrVariation = (Math.random() - 0.5) * 8; // ±4 bpm
+                        patient.hr = Math.round(patient.baseline.hr + hrVariation);
+                        patient.hr = Math.max(55, Math.min(105, patient.hr));
+                        
+                        // BP variation
+                        const sysVariation = (Math.random() - 0.5) * 16; // ±8 mmHg
+                        const diaVariation = (Math.random() - 0.5) * 12; // ±6 mmHg
+                        const newSys = Math.round(patient.baseline.systolic + sysVariation);
+                        const newDia = Math.round(patient.baseline.diastolic + diaVariation);
+                        patient.bp = `${Math.max(85, Math.min(145, newSys))}/${Math.max(55, Math.min(95, newDia))}`;
+                        
+                        // Activity variation
+                        const activityChange = Math.floor((Math.random() - 0.5) * 500);
+                        patient.activity = Math.max(0, patient.activity + activityChange);
+                    } else if (patient.status === 'anomaly') {
+                        // Anomaly patient - maintain elevated values with some variation
+                        const hrVariation = (Math.random() - 0.5) * 20; // ±10 bpm
+                        patient.hr = Math.round(170 + hrVariation);
+                        patient.hr = Math.max(150, Math.min(200, patient.hr));
+                        
+                        // Elevated BP
+                        const sysVariation = (Math.random() - 0.5) * 20;
+                        const diaVariation = (Math.random() - 0.5) * 15;
+                        const newSys = Math.round(155 + sysVariation);
+                        const newDia = Math.round(90 + diaVariation);
+                        patient.bp = `${Math.max(140, Math.min(180, newSys))}/${Math.max(80, Math.min(110, newDia))}`;
+                    }
+                    
+                    patient.lastUpdate = Date.now();
+                });
+                
+                // Update displays
+                renderPatients();
+                renderLiveChart();
+                updateAIAnalysis();
+            }, 2000); // Update every 2 seconds for real-time feel
+        }
+
+        function updateAIAnalysis() {
+            const selectedPatient = patients.find(p => p.id.toString() === selectedPatientId);
+            if (selectedPatient) {
+                updateAIAnalysisForPatient(selectedPatient);
+            }
+        }
+
+        function updateAIAnalysisForPatient(patient) {
+            const analysis = detector.detectAnomalies(patient);
+            
+            // Update anomaly score display
+            const scoreElement = document.getElementById('anomalyScore');
+            const fillElement = document.getElementById('confidenceFill');
+            const analysisElement = document.getElementById('lastAnalysis');
+            
+            if (analysis.anomalies.length > 0) {
+                scoreElement.textContent = `${analysis.confidence}%`;
+                scoreElement.style.color = analysis.confidence > 80 ? '#ef4444' : '#f59e0b';
+                fillElement.style.width = `${analysis.confidence}%`;
+                
+                const anomaly = analysis.anomalies[0];
+                analysisElement.innerHTML = `
+                    <strong>Patient #${patient.id} - ${anomaly.type}</strong>: ${anomaly.value} (baseline: ${anomaly.baseline})<br>
+                    Isolation Forest: ${anomaly.isolationScore}% | LSTM: ${anomaly.lstmScore}%<br>
+                    Status: <span style="color: #ef4444;">${anomaly.severity.toUpperCase()}</span>
+                `;
+            } else {
+                const normalConfidence = Math.max(5, Math.min(15, Math.floor(Math.random() * 10) + 8));
+                scoreElement.textContent = `${normalConfidence}%`;
+                scoreElement.style.color = '#10b981';
+                fillElement.style.width = `${normalConfidence}%`;
+                analysisElement.innerHTML = `
+                    <strong>Patient #${patient.id}</strong> - All parameters within normal range<br>
+                    Trend: ${patient.trend.replace('_', ' ')} | Last update: ${new Date(patient.lastUpdate).toLocaleTimeString()}
+                `;
+            }
+        }
+
+        // Render functions
+        function renderPatients() {
+            const grid = document.getElementById('patientsGrid');
+            grid.innerHTML = '';
+            
+            patients.forEach(patient => {
+                const analysis = detector.detectAnomalies(patient);
+                const hasAnomaly = analysis.anomalies.length > 0;
+                
+                const card = document.createElement('div');
+                card.className = `patient-card ${hasAnomaly ? 'alert' : ''}`;
+                card.onclick = () => showPatientDetails(patient, analysis);
+                
+                // Calculate trend indicator
+                let trendIcon = '➡️';
+                if (patient.history.length >= 2) {
+                    const recent = patient.history.slice(-2);
+                    const hrChange = recent[1].hr - recent[0].hr;
+                    if (hrChange > 5) trendIcon = '⬆️';
+                    else if (hrChange < -5) trendIcon = '⬇️';
+                }
+                
+                card.innerHTML = `
+                    <div class="patient-header">
+                        <span class="patient-id">Patient #${patient.id} ${trendIcon}</span>
+                        ${hasAnomaly ? '<span class="alert-badge">ALERT</span>' : ''}
+                    </div>
+                    <div class="vitals-row">
+                        <div class="vital-item ${patient.hr > 150 ? 'anomaly' : ''}">
+                            <div class="vital-value">${patient.hr}</div>
+                            <div class="vital-label">HR (bpm)</div>
+                        </div>
+                        <div class="vital-item ${patient.bp.includes('160') || patient.bp.includes('170') ? 'anomaly' : ''}">
+                            <div class="vital-value">${patient.bp}</div>
+                            <div class="vital-label">BP (mmHg)</div>
+                        </div>
+                        <div class="vital-item">
+                            <div class="vital-value">${patient.activity.toLocaleString()}</div>
+                            <div class="vital-label">Steps</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 0.7rem; color: #94a3b8; text-align: center;">
+                        Last update: ${new Date(patient.lastUpdate).toLocaleTimeString()}
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        function renderSites() {
+            const grid = document.getElementById('heatmapGrid');
+            grid.innerHTML = '';
+            
+            // Count risk levels
+            let lowCount = 0, mediumCount = 0, highCount = 0;
+            
+            sites.forEach(site => {
+                const cell = document.createElement('div');
+                cell.className = `site-cell ${site.risk}-risk`;
+                cell.textContent = site.id;
+                cell.onclick = () => showSiteDetails(site);
+                
+                if (site.risk === 'high') {
+                    const indicator = document.createElement('div');
+                    indicator.className = 'risk-indicator';
+                    cell.appendChild(indicator);
+                    highCount++;
+                } else if (site.risk === 'medium') {
+                    mediumCount++;
+                } else {
+                    lowCount++;
+                }
+                
+                grid.appendChild(cell);
+            });
+            
+            // Update summary statistics
+            document.getElementById('lowRiskCount').textContent = lowCount;
+            document.getElementById('mediumRiskCount').textContent = mediumCount;
+            document.getElementById('highRiskCount').textContent = highCount;
+        }
+
+        function showPatientDetails(patient, analysis) {
+            const modal = document.getElementById('alertModal');
+            const timestamp = document.getElementById('alertTimestamp');
+            const details = document.getElementById('alertDetails');
+            
+            timestamp.textContent = new Date().toLocaleTimeString();
+            
+            if (analysis.anomalies.length > 0) {
+                const anomaly = analysis.anomalies[0];
+                const deviationPercent = Math.round(((anomaly.value - anomaly.baseline) / anomaly.baseline) * 100);
+                
+                details.innerHTML = `
+                    <div style="color: #fca5a5; font-size: 1.1rem; margin-bottom: 16px;">
+                        <strong>Patient #${patient.id} - ${anomaly.type} Anomaly Detected</strong>
+                    </div>
+                    <div style="color: #e2e8f0; line-height: 1.8;">
+                        <strong>Current Reading:</strong> <span style="color: #ef4444; font-size: 1.1rem;">${anomaly.value}</span><br>
+                        <strong>Baseline:</strong> ${anomaly.baseline}<br>
+                        <strong>Deviation:</strong> <span style="color: #f59e0b;">+${Math.abs(deviationPercent)}%</span><br>
+                        <strong>Severity:</strong> <span style="color: ${anomaly.severity === 'critical' ? '#ef4444' : '#f59e0b'};">${anomaly.severity.toUpperCase()}</span><br>
+                        <strong>AI Models:</strong><br>
+                        &nbsp;&nbsp;• Isolation Forest: ${anomaly.isolationScore}%<br>
+                        &nbsp;&nbsp;• LSTM Trend: ${anomaly.lstmScore}%<br>
+                        &nbsp;&nbsp;• Combined Confidence: <strong style="color: #ef4444;">${anomaly.confidence}%</strong><br><br>
+                        <strong style="color: #fbbf24;">⚡ Immediate Actions Required:</strong><br>
+                        &nbsp;&nbsp;• Contact patient for wellness check<br>
+                        &nbsp;&nbsp;• Verify device calibration<br>
+                        &nbsp;&nbsp;• Consider protocol deviation assessment<br>
+                        &nbsp;&nbsp;• Alert site coordinator
+                    </div>
+                `;
+            } else {
+                details.innerHTML = `
+                    <div style="color: #6ee7b7; font-size: 1.1rem;">
+                        <strong>Patient #${patient.id} - All Systems Normal</strong>
+                    </div>
+                    <div style="color: #e2e8f0; margin-top: 12px; line-height: 1.6;">
+                        <strong>Current Status:</strong> All vitals within expected parameters<br>
+                        <strong>AI Confidence:</strong> ${analysis.confidence}% normal<br>
+                        <strong>Trend:</strong> ${patient.trend.replace('_', ' ')}<br>
+                        <strong>Last Check:</strong> ${new Date(patient.lastUpdate).toLocaleTimeString()}
+                    </div>
+                `;
+            }
+            
+            modal.style.display = 'flex';
+        }
+
+        function showSiteDetails(site) {
+            showCustomModal(
+                '🏥',
+                `${site.id} Analytics`,
+                `
+                    <strong>Risk Level:</strong> <span style="color: ${site.risk === 'high' ? '#ef4444' : site.risk === 'medium' ? '#f59e0b' : '#10b981'};">${site.risk.toUpperCase()}</span><br><br>
+                    <strong>Site Metrics:</strong><br>
+                    • Active Patients: ${Math.floor(Math.random() * 20) + 10}<br>
+                    • Compliance Rate: ${95 + Math.floor(Math.random() * 5)}%<br>
+                    • Data Quality Score: ${site.risk === 'high' ? '87%' : site.risk === 'medium' ? '94%' : '98%'}<br>
+                    • Last Monitoring: ${new Date().toLocaleTimeString()}<br><br>
+                    <em>Click individual patients above for detailed monitoring data.</em>
+                `
+            );
+        }
+
+        function showCustomModal(icon, title, content) {
+            const modal = document.getElementById('infoModal');
+            const iconElement = document.getElementById('infoIcon');
+            const titleElement = document.getElementById('infoTitle');
+            const contentElement = document.getElementById('infoContent');
+            
+            iconElement.textContent = icon;
+            titleElement.textContent = title;
+            contentElement.innerHTML = content;
+            
+            modal.style.display = 'flex';
+        }
+
+        function closeAlert() {
+            document.getElementById('alertModal').style.display = 'none';
+        }
+
+        function closeInfo() {
+            document.getElementById('infoModal').style.display = 'none';
+        }
+
+        // Add new risk alert to the feed
+        function addRiskAlert(message) {
+            const alertsList = document.getElementById('riskAlerts');
+            const currentTime = new Date().toLocaleTimeString();
+            
+            // Create new alert item
+            const alertItem = document.createElement('div');
+            alertItem.className = 'risk-alert-item';
+            alertItem.style.background = 'rgba(239, 68, 68, 0.1)';
+            alertItem.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+            alertItem.innerHTML = `
+                <span class="alert-time">${currentTime}</span>
+                <span class="alert-text">${message}</span>
+            `;
+            
+            // Add to top of list
+            alertsList.insertBefore(alertItem, alertsList.firstChild);
+            
+            // Keep only last 5 alerts
+            while (alertsList.children.length > 5) {
+                alertsList.removeChild(alertsList.lastChild);
+            }
+            
+            // Highlight new alert briefly
+            setTimeout(() => {
+                alertItem.style.background = 'rgba(30, 41, 59, 0.5)';
+                alertItem.style.border = 'none';
+            }, 3000);
+        }
+
+        // Update dropdown options to reflect current patient statuses
+        function updatePatientDropdown() {
+            const selector = document.getElementById('patientSelector');
+            selector.innerHTML = '';
+            
+            patients.forEach(patient => {
+                const option = document.createElement('option');
+                option.value = patient.id;
+                let statusText = '';
+                if (patient.status === 'anomaly') statusText = ' (Anomaly)';
+                else if (patient.status === 'device_failure') statusText = ' (Device Failure)';
+                
+                option.textContent = `Patient #${patient.id}${statusText}`;
+                selector.appendChild(option);
+            });
+            
+            // Keep current selection if valid
+            if (patients.find(p => p.id.toString() === selectedPatientId)) {
+                selector.value = selectedPatientId;
+            }
+        }
+
+        // Demo control functions
+        function generateNormalData() {
+            const affectedPatients = [];
+            patients.forEach(patient => {
+                if (patient.status === 'anomaly' || patient.status === 'device_failure') {
+                    patient.hr = patient.baseline.hr + Math.floor((Math.random() - 0.5) * 10);
+                    patient.bp = `${patient.baseline.systolic + Math.floor((Math.random() - 0.5) * 16)}/${patient.baseline.diastolic + Math.floor((Math.random() - 0.5) * 12)}`;
+                    patient.status = 'normal';
+                    patient.trend = 'stable';
+                    affectedPatients.push(patient.id);
+                }
+            });
+            
+            // Add alert for normalization
+            if (affectedPatients.length > 0) {
+                addRiskAlert(`${affectedPatients.length} patient(s) normalized - all parameters restored`);
+            }
+            
+            updatePatientDropdown();
+            renderPatients();
+            updateAnalysis("Normal data generated. All patients within expected ranges.");
+        }
+
+        function injectAnomaly() {
+            const normalPatients = patients.filter(p => p.status === 'normal');
+            if (normalPatients.length > 0) {
+                const patient = normalPatients[Math.floor(Math.random() * normalPatients.length)];
+                patient.hr = 160 + Math.floor(Math.random() * 40);
+                patient.bp = `${150 + Math.floor(Math.random() * 30)}/${90 + Math.floor(Math.random() * 20)}`;
+                patient.status = 'anomaly';
+                patient.trend = 'critical_increase';
+                
+                // Add entry to Recent Risk Changes
+                addRiskAlert(`Patient #${patient.id} anomaly detected - HR ${patient.hr} bpm`);
+                
+                // Update dropdown to reflect new anomaly status
+                updatePatientDropdown();
+                
+                // Switch to the anomaly patient in the chart
+                selectedPatientId = patient.id.toString();
+                document.getElementById('patientSelector').value = selectedPatientId;
+                chartData = []; // Clear chart for new patient
+                
+                renderPatients();
+                updateAnalysis(`Anomaly injected for Patient #${patient.id}. AI model detecting...`);
+                
+                setTimeout(() => {
+                    const analysis = detector.detectAnomalies(patient);
+                    showPatientDetails(patient, analysis);
+                }, 1500);
+            }
+        }
+
+
+        function resetDemo() {
+            patients = [
+                { id: 101, hr: 72, bp: "120/80", activity: 8520, status: "normal" },
+                { id: 102, hr: 68, bp: "118/76", activity: 9240, status: "normal" },
+                { id: 103, hr: 75, bp: "125/82", activity: 7650, status: "normal" },
+                { id: 204, hr: 180, bp: "160/95", activity: 12400, status: "anomaly" },
+                { id: 105, hr: 70, bp: "115/75", activity: 8900, status: "normal" },
+                { id: 106, hr: 73, bp: "122/78", activity: 7800, status: "normal" }
+            ];
+            renderPatients();
+            updateAnalysis("Demo reset. One anomaly pre-loaded for demonstration.");
+        }
+
+        function updateAnalysis(message) {
+            console.log(message);
+            // Don't change AI status - it should always show streaming state
+        }
+
+        // Auto-update simulation
+        function simulateRealTimeUpdates() {
+            setInterval(() => {
+                // Randomly update normal patient vitals
+                patients.forEach(patient => {
+                    if (patient.status === 'normal') {
+                        // Small random variations
+                        patient.hr += Math.floor(Math.random() * 6) - 3; // ±3 bpm
+                        patient.hr = Math.max(60, Math.min(100, patient.hr));
+                        
+                        patient.activity += Math.floor(Math.random() * 200) - 100; // ±100 steps
+                        patient.activity = Math.max(0, patient.activity);
+                    }
+                });
+                
+                // Occasionally change site risk levels
+                if (Math.random() < 0.3) {
+                    const randomSite = sites[Math.floor(Math.random() * sites.length)];
+                    const risks = ['low', 'medium', 'high'];
+                    randomSite.risk = risks[Math.floor(Math.random() * risks.length)];
+                    renderSites();
+                }
+                
+                renderPatients();
+            }, 5000);
+        }
+
+        // Enhanced demo controls with real-time features
+        function toggleStreaming() {
+            const toggleBtn = document.getElementById('streamToggleBtn');
+            const aiStatus = document.querySelector('.ai-status');
+            
+            if (isStreaming) {
+                clearInterval(streamingInterval);
+                isStreaming = false;
+                document.querySelector('.status-indicator').textContent = 'Paused';
+                aiStatus.textContent = 'Paused';
+                toggleBtn.innerHTML = '▶️ Resume Stream';
+                toggleBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                updateAnalysis("Real-time streaming paused");
+            } else {
+                startRealTimeStream();
+                isStreaming = true;
+                document.querySelector('.status-indicator').textContent = 'Live';
+                aiStatus.textContent = 'Processing';
+                toggleBtn.innerHTML = '⏸️ Pause Stream';
+                toggleBtn.style.background = 'linear-gradient(135deg, #3b82f6, #1d4ed8)';
+                updateAnalysis("Real-time streaming resumed");
+            }
+        }
+
+        function generateAnomalyBurst() {
+            // Create multiple anomalies for demonstration
+            const normalPatients = patients.filter(p => p.status === 'normal');
+            const count = Math.min(2, normalPatients.length);
+            
+            for (let i = 0; i < count; i++) {
+                const patient = normalPatients[i];
+                patient.hr = 155 + Math.floor(Math.random() * 30);
+                patient.bp = `${160 + Math.floor(Math.random() * 25)}/${95 + Math.floor(Math.random() * 15)}`;
+                patient.status = 'anomaly';
+                patient.trend = 'critical_increase';
+                
+                // Add individual risk alerts
+                addRiskAlert(`Patient #${patient.id} anomaly burst - HR ${patient.hr} bpm`);
+            }
+            
+            updatePatientDropdown();
+            renderPatients();
+            updateAnalysis(`Anomaly burst: ${count} patients flagged by AI models`);
+        }
+
+        function simulateDeviceFailure() {
+            const patient = patients[Math.floor(Math.random() * patients.length)];
+            patient.hr = 0; // Device failure simulation
+            patient.bp = "0/0";
+            patient.status = 'device_failure';
+            patient.trend = 'no_signal';
+            
+            // Add entry to Recent Risk Changes
+            addRiskAlert(`Patient #${patient.id} device failure - no signal detected`);
+            
+            updatePatientDropdown();
+            renderPatients();
+            updateAnalysis(`Device failure detected for Patient #${patient.id}`);
+            
+            setTimeout(() => {
+                showPatientDetails(patient, {
+                    anomalies: [{
+                        type: "Device Failure",
+                        value: "No signal",
+                        severity: "critical",
+                        confidence: 99,
+                        isolationScore: 99,
+                        lstmScore: 95,
+                        baseline: patient.baseline.hr
+                    }],
+                    confidence: 99
+                });
+            }, 1000);
+        }
+
+        // Initialize enhanced demo
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize patient history
+            patients.forEach(patient => {
+                for (let i = 0; i < 5; i++) {
+                    patient.history.push({
+                        hr: patient.hr + (Math.random() - 0.5) * 10,
+                        bp: patient.bp,
+                        timestamp: Date.now() - (5 - i) * 120000
+                    });
+                }
+            });
+            
+            // Initial render
+            updatePatientDropdown();
+            renderPatients();
+            renderSites();
+            renderLiveChart();
+            updateAIAnalysis();
+            
+            // Start real-time streaming
+            startRealTimeStream();
+            
+            // Add patient selector event listener
+            document.getElementById('patientSelector').addEventListener('change', onPatientSelectionChange);
+            
+            // Close modals on background click
+            document.getElementById('alertModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeAlert();
+                }
+            });
+            
+            document.getElementById('infoModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeInfo();
+                }
+            });
+            
+            // Add keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                switch(e.key) {
+                    case '1': generateNormalData(); break;
+                    case '2': injectAnomaly(); break;
+                    case '3': generateAnomalyBurst(); break;
+                    case '4': simulateDeviceFailure(); break;
+                    case 'r': resetDemo(); break;
+                    case ' ': e.preventDefault(); toggleStreaming(); break;
+                }
+            });
+            
+            console.log('🤖 AI Monitoring Dashboard Demo Loaded');
+            console.log('📊 Real-time streaming active');
+            console.log('⌨️  Keyboard shortcuts: 1-4 for actions, R for reset, Space to pause/resume');
+        });
+    </script>
+</body>
+</html>
