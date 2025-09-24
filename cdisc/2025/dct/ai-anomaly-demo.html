@@ -1073,7 +1073,7 @@
             </h3>
             <div class="controls-grid">
                 <button class="control-btn" onclick="generateNormalData()">
-                    📊 Generate Normal Data
+                    🔧 Normalize Patient Data
                 </button>
                 <button class="control-btn danger" onclick="injectAnomaly()">
                     ⚠️ Inject Anomaly
@@ -1663,6 +1663,7 @@
                     patient.bp = `${patient.baseline.systolic + Math.floor((Math.random() - 0.5) * 16)}/${patient.baseline.diastolic + Math.floor((Math.random() - 0.5) * 12)}`;
                     patient.status = 'normal';
                     patient.trend = 'stable';
+                    patient.lastUpdate = Date.now();
                     affectedPatients.push(patient.id);
                 }
             });
@@ -1670,11 +1671,31 @@
             // Add alert for normalization
             if (affectedPatients.length > 0) {
                 addRiskAlert(`${affectedPatients.length} patient(s) normalized - all parameters restored`);
+            } else {
+                addRiskAlert("All patients already within normal parameters");
             }
             
+            // Clear chart data for fresh start
+            chartData = [];
+            
+            // Update all components
             updatePatientDropdown();
             renderPatients();
+            renderSites();
+            renderLiveChart();
+            updateAIAnalysis();
             updateAnalysis("Normal data generated. All patients within expected ranges.");
+            
+            // Visual feedback - briefly highlight the button
+            const btn = event.target;
+            const originalBackground = btn.style.background;
+            btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            btn.textContent = '✅ Data Normalized';
+            
+            setTimeout(() => {
+                btn.style.background = originalBackground;
+                btn.innerHTML = '🔧 Normalize Patient Data';
+            }, 2000);
         }
 
         function injectAnomaly() {
@@ -1709,16 +1730,64 @@
 
 
         function resetDemo() {
+            // Reset patients with full data structure
             patients = [
-                { id: 101, hr: 72, bp: "120/80", activity: 8520, status: "normal" },
-                { id: 102, hr: 68, bp: "118/76", activity: 9240, status: "normal" },
-                { id: 103, hr: 75, bp: "125/82", activity: 7650, status: "normal" },
-                { id: 204, hr: 180, bp: "160/95", activity: 12400, status: "anomaly" },
-                { id: 105, hr: 70, bp: "115/75", activity: 8900, status: "normal" },
-                { id: 106, hr: 73, bp: "122/78", activity: 7800, status: "normal" }
+                { 
+                    id: 101, hr: 72, bp: "120/80", activity: 8520, status: "normal",
+                    history: [], baseline: { hr: 72, systolic: 120, diastolic: 80 },
+                    lastUpdate: Date.now(), trend: "stable"
+                },
+                { 
+                    id: 102, hr: 68, bp: "118/76", activity: 9240, status: "normal",
+                    history: [], baseline: { hr: 68, systolic: 118, diastolic: 76 },
+                    lastUpdate: Date.now(), trend: "stable"
+                },
+                { 
+                    id: 103, hr: 75, bp: "125/82", activity: 7650, status: "normal",
+                    history: [], baseline: { hr: 75, systolic: 125, diastolic: 82 },
+                    lastUpdate: Date.now(), trend: "stable"
+                },
+                { 
+                    id: 204, hr: 180, bp: "160/95", activity: 12400, status: "anomaly",
+                    history: [], baseline: { hr: 72, systolic: 120, diastolic: 80 },
+                    lastUpdate: Date.now(), trend: "critical_increase"
+                },
+                { 
+                    id: 105, hr: 70, bp: "115/75", activity: 8900, status: "normal",
+                    history: [], baseline: { hr: 70, systolic: 115, diastolic: 75 },
+                    lastUpdate: Date.now(), trend: "stable"
+                },
+                { 
+                    id: 106, hr: 73, bp: "122/78", activity: 7800, status: "normal",
+                    history: [], baseline: { hr: 73, systolic: 122, diastolic: 78 },
+                    lastUpdate: Date.now(), trend: "stable"
+                }
             ];
+            
+            // Clear chart data
+            chartData = [];
+            
+            // Reset to default patient
+            selectedPatientId = '204';
+            
+            // Update all components
+            updatePatientDropdown();
             renderPatients();
+            renderSites();
+            renderLiveChart();
+            updateAIAnalysis();
             updateAnalysis("Demo reset. One anomaly pre-loaded for demonstration.");
+            
+            // Visual feedback - briefly highlight the button
+            const btn = event.target;
+            const originalBackground = btn.style.background;
+            btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            btn.textContent = '✅ Demo Reset';
+            
+            setTimeout(() => {
+                btn.style.background = originalBackground;
+                btn.innerHTML = '🔄 Reset Demo';
+            }, 2000);
         }
 
         function updateAnalysis(message) {
