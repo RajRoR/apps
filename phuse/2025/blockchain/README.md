@@ -145,11 +145,23 @@ blockchain/
 │   ├── 04_anchor_sdtm.sh          # Data anchoring
 │   ├── 05_verify_hash.sh          # Hash verification
 │   ├── 06_withdraw_consent.sh     # Consent withdrawal
-│   └── hash_sdtm.py               # Hash computation utility
+│   ├── hash_sdtm.py               # Hash computation utility
+│   └── test_hash_performance.sh   # Performance benchmarking
 ├── data/                          # Sample data
 │   ├── DM.csv                     # Demographics SDTM dataset
 │   ├── consent_SUBJ001_v2.json    # Active consent
 │   └── consent_withdrawn_SUBJ001_v2.json
+├── diagrams/                      # Interactive diagrams (HTML/SVG)
+│   ├── architecture-diagram.html           # 4-layer architecture (color)
+│   ├── architecture-diagram-bw.html        # 4-layer architecture (B&W)
+│   ├── consent-management-diagram.html     # Consent governance (color)
+│   ├── consent-management-diagram-bw.html  # Consent governance (B&W)
+│   ├── sdtm-integration-diagram.html       # SDTM anchoring (color)
+│   ├── sdtm-integration-diagram-bw.html    # SDTM anchoring (B&W)
+│   ├── reference-implementation-diagram.html    # Network deployment (color)
+│   ├── reference-implementation-diagram-bw.html # Network deployment (B&W)
+│   ├── performance-graphs.html             # Performance analysis (color)
+│   └── performance-graphs-bw.html          # Performance analysis (B&W)
 └── README.md
 ```
 
@@ -223,6 +235,73 @@ Business rules enforced by code, not manual processes.
 4. **Result:** Verification fails with red error message showing hash mismatch
 
 This demonstrates how even minor tampering is immediately detectable!
+
+## Interactive Diagrams
+
+The `diagrams/` folder contains publication-ready interactive HTML diagrams for papers and presentations.
+
+### Available Diagrams
+
+1. **Architecture Diagram** - Four-layer blockchain system architecture
+   - `architecture-diagram.html` - Color version (presentations)
+   - `architecture-diagram-bw.html` - B&W version (academic papers)
+
+2. **Consent Management** - Patient-centric governance and consent lifecycle
+   - `consent-management-diagram.html` - Color version
+   - `consent-management-diagram-bw.html` - B&W version
+
+3. **SDTM Integration** - Dataset anchoring with Merkle trees
+   - `sdtm-integration-diagram.html` - Color version
+   - `sdtm-integration-diagram-bw.html` - B&W version
+
+4. **Reference Implementation** - Complete network deployment
+   - `reference-implementation-diagram.html` - Color version
+   - `reference-implementation-diagram-bw.html` - B&W version
+
+5. **Performance Analysis** - Blockchain verification scalability
+   - `performance-graphs.html` - Color version with interactive charts
+   - `performance-graphs-bw.html` - B&W version with formal captions
+
+### How to Use Diagrams
+
+**For Presentations:**
+```bash
+# Open colored versions in browser
+open diagrams/architecture-diagram.html
+open diagrams/consent-management-diagram.html
+open diagrams/performance-graphs.html
+```
+
+**For Academic Papers:**
+```bash
+# Open B&W versions (grayscale optimized)
+open diagrams/architecture-diagram-bw.html
+open diagrams/consent-management-diagram-bw.html
+open diagrams/performance-graphs-bw.html
+```
+
+**Export Options:**
+- Click "📥 Export PDF" to save as PDF
+- Click "📊 Export SVG" to save as scalable vector graphics
+- Press `Ctrl/Cmd + P` to print or save as PDF
+- Use "🎨 Switch to Color" or "⚫ Switch to B&W" buttons to toggle versions
+
+**For LaTeX Papers:**
+Export SVG or high-resolution PNG and include in your document:
+```latex
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{diagrams/figure-1.pdf}
+\caption{Four-layer blockchain architecture for clinical trials.}
+\label{fig:architecture}
+\end{figure}
+```
+
+All diagrams are optimized for:
+- ✅ IEEE/ACM conference papers (2-column format)
+- ✅ PowerPoint/Keynote slides (16:9 aspect ratio)
+- ✅ Poster presentations (high-resolution export)
+- ✅ Technical documentation (SVG scalability)
 
 ## Cleanup
 

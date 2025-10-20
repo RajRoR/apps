@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reference Implementation - B&W</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Times New Roman', 'Georgia', serif;
+            background: white;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            font-size: 22px;
+            color: #000;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .caption {
+            text-align: center;
+            font-size: 14px;
+            color: #000;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+        .mermaid {
+            text-align: center;
+            background: white;
+            margin: 20px 0;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 5px;
+            background: #000;
+            color: white;
+            border: 2px solid #000;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        button:hover { 
+            background: #333;
+            border-color: #333;
+        }
+        .description {
+            font-size: 12px;
+            line-height: 1.6;
+            margin: 20px 0;
+            text-align: justify;
+        }
+        .specs {
+            font-size: 12px;
+            line-height: 1.8;
+            margin: 20px 0;
+        }
+        .specs h3 {
+            font-size: 13px;
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+        @media print {
+            .controls { display: none; }
+            body { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Figure 4: Reference Implementation Architecture</h1>
+        
+        <div class="controls">
+            <button onclick="window.print()">📥 Export PDF</button>
+            <button onclick="exportSVG()">📊 Export SVG</button>
+            <button onclick="window.location.href='reference-implementation-diagram.html'">🎨 Switch to Color</button>
+        </div>
+        
+        <div class="caption">(a) Four-Organization Hyperledger Fabric Network Deployment</div>
+        <div class="mermaid">
+graph TB
+    subgraph Docker["Docker Compose: Hyperledger Fabric 2.5"]
+        
+        subgraph Channel1["Channel: clinicaltrial"]
+            
+            subgraph Org1["Org 1: SPONSOR"]
+                SP_PEER["Peer0.sponsor :7051<br/>CouchDB<br/>Consent Mgmt"]
+                SP_CA["CA.sponsor :7054"]
+                SP_API["API :3001"]
+            end
+            
+            subgraph Org2["Org 2: CRO"]
+                CRO_PEER["Peer0.cro :8051<br/>CouchDB<br/>Data Anchoring"]
+                CRO_CA["CA.cro :8054"]
+                CRO_API["API :3002"]
+            end
+            
+            subgraph Org3["Org 3: SITE"]
+                SITE_PEER["Peer0.site :9051<br/>CouchDB<br/>Visit Recording"]
+                SITE_CA["CA.site :9054"]
+                SITE_API["API :3003"]
+            end
+            
+            subgraph Org4["Org 4: REGULATOR"]
+                REG_PEER["Peer0.regulator :10051<br/>CouchDB<br/>Read-Only"]
+                REG_CA["CA.regulator :10054"]
+                REG_API["API :3004"]
+            end
+        end
+        
+        subgraph Channel2["Channel: audittrail"]
+            AUDIT["Audit Events<br/>Compliance Logs"]
+        end
+        
+        subgraph Ordering["Ordering Service (Raft)"]
+            ORD1["Orderer0 :7050"]
+            ORD2["Orderer1 :8050"]
+            ORD3["Orderer2 :9050"]
+        end
+        
+        subgraph Chaincode["Smart Contracts"]
+            CC1["consentcc<br/>Consent Mgmt"]
+            CC2["datacc<br/>SDTM Anchoring"]
+            CC3["protocolcc<br/>Visit Validation"]
+        end
+    end
+    
+    SP_PEER <--> ORD1
+    CRO_PEER <--> ORD1
+    SITE_PEER <--> ORD1
+    REG_PEER <--> ORD1
+    
+    ORD1 <--> ORD2
+    ORD2 <--> ORD3
+    
+    SP_PEER --> CC1
+    CRO_PEER --> CC2
+    SITE_PEER --> CC3
+    REG_PEER -.->|Query| CC1 & CC2 & CC3
+    
+    REG_PEER --> AUDIT
+    
+    SP_API --> SP_PEER
+    CRO_API --> CRO_PEER
+    SITE_API --> SITE_PEER
+    REG_API --> REG_PEER
+    
+    style Docker fill:#fff,stroke:#000,stroke-width:3px
+    style Channel1 fill:#f0f0f0,stroke:#000,stroke-width:2px
+    style Channel2 fill:#e8e8e8,stroke:#000,stroke-width:2px
+    style Ordering fill:#f5f5f5,stroke:#000,stroke-width:2px
+    style Chaincode fill:#e0e0e0,stroke:#000,stroke-width:2px
+    
+    style Org1 fill:#fff,stroke:#000,stroke-width:2px,stroke-dasharray: 5 5
+    style Org2 fill:#f8f8f8,stroke:#000,stroke-width:2px
+    style Org3 fill:#fff,stroke:#000,stroke-width:2px,stroke-dasharray: 3 3
+    style Org4 fill:#e8e8e8,stroke:#000,stroke-width:2px
+        </div>
+        
+        <div class="caption">(b) End-to-End Workflow: Consent → Validation → Anchoring → Verification</div>
+        <div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant Patient as Patient
+    participant Site as Site
+    participant Sponsor as Sponsor
+    participant CRO as CRO
+    participant Chain as Chaincode
+    participant Ledger as Ledger
+    participant Reg as Regulator
+
+    rect rgb(248, 248, 248)
+    Note over Patient,Ledger: Consent Recording
+    Patient->>Site: Sign eConsent
+    Site->>Sponsor: Submit
+    Sponsor->>Sponsor: SHA-256(consent)
+    Sponsor->>Chain: RegisterConsent()
+    Chain->>Ledger: Write transaction
+    Chain-->>Sponsor: Recorded
+    end
+    
+    rect rgb(240, 240, 240)
+    Note over Site,Ledger: Protocol Compliance
+    Site->>Site: Visit Day 7
+    Site->>Chain: ValidateVisitWindow()
+    Chain->>Chain: Check Day 7±2?
+    alt Within Window
+        Chain->>Ledger: Compliant
+        Chain-->>Site: Accepted
+    else Outside Window
+        Chain->>Ledger: Deviation
+        Chain-->>Site: ALERT
+        Chain-->>Sponsor: Notify
+    end
+    end
+    
+    rect rgb(250, 250, 250)
+    Note over CRO,Ledger: Data Anchoring
+    CRO->>CRO: Process → SDTM
+    CRO->>CRO: SHA-256(DM.xpt)
+    CRO->>Chain: AnchorDataset()
+    Chain->>Ledger: Check consent?
+    Ledger-->>Chain: Active
+    Chain->>Ledger: Write anchor
+    Chain-->>CRO: Anchored
+    
+    CRO->>CRO: SHA-256(define.xml)
+    CRO->>Chain: AnchorDefineXML()
+    Chain->>Ledger: Write metadata
+    Chain-->>CRO: Anchored
+    end
+    
+    rect rgb(245, 245, 245)
+    Note over Reg,Ledger: Verification
+    CRO->>Reg: Submit eCTD
+    
+    Reg->>Reg: SHA-256(DM.xpt)
+    Reg->>Chain: GetAnchor()
+    Chain->>Ledger: Query
+    Ledger-->>Chain: hash + ts
+    Chain-->>Reg: Return
+    
+    Reg->>Reg: Compare
+    alt Match
+        Reg->>Reg: Authentic
+    else Mismatch
+        Reg->>Reg: Tampered
+    end
+    
+    Reg->>Chain: GetConsent()
+    Chain->>Ledger: Query
+    Ledger-->>Chain: Record
+    Chain-->>Reg: Return
+    Reg->>Reg: Verify timing
+    end
+        </div>
+        
+        <div class="description">
+            <strong>Figure 4.</strong> Reference implementation of Hyperledger Fabric network for clinical trials. 
+            (a) Shows complete deployment architecture with four organizations (Sponsor, CRO, Site, Regulator), 
+            each operating a peer node with CouchDB state database and certificate authority. Three orderers 
+            provide Raft-based consensus. Two channels separate operational data (clinicaltrial) from audit 
+            logs (audittrail). REST API gateways enable external system integration. Three chaincode modules 
+            implement consent management, SDTM dataset anchoring, and protocol compliance validation. 
+            Different fill patterns and borders distinguish organizations for grayscale printing.
+            (b) Demonstrates the complete end-to-end workflow across four phases: consent recording with 
+            cryptographic hashing, protocol compliance validation with deviation alerts, SDTM data anchoring 
+            with consent verification, and regulatory verification through independent hash comparison. 
+            Shaded regions distinguish sequential phases.
+        </div>
+        
+        <div class="specs">
+            <h3>Implementation Specifications:</h3>
+            
+            <p><strong>Infrastructure Components:</strong></p>
+            <ul style="margin-left: 20px; line-height: 1.8;">
+                <li>4 Peer Nodes (ports 7051, 8051, 9051, 10051) with CouchDB world state databases</li>
+                <li>3 Orderer Nodes (ports 7050, 8050, 9050) implementing Raft consensus for crash fault tolerance</li>
+                <li>4 Certificate Authorities (ports 7054, 8054, 9054, 10054) for X.509 identity management</li>
+                <li>4 REST API Gateways (ports 3001-3004) for external system integration</li>
+                <li>2 Channels: "clinicaltrial" (operational) and "audittrail" (regulator-only)</li>
+            </ul>
+            
+            <p><strong>Chaincode Modules (TypeScript):</strong></p>
+            <ul style="margin-left: 20px; line-height: 1.8;">
+                <li><strong>consentcc:</strong> RegisterConsent(), UpdateConsent(), GetConsent() - Manages consent lifecycle</li>
+                <li><strong>datacc:</strong> AnchorDataset(), AnchorDefineXML(), VerifyHash() - Handles SDTM/metadata anchoring</li>
+                <li><strong>protocolcc:</strong> ValidateVisitWindow(), RecordDeviation(), TriggerAlert() - Enforces protocol compliance</li>
+                <li>Endorsement Policy: Majority (2 of 3 organizations must approve write transactions)</li>
+            </ul>
+            
+            <p><strong>Deployment Details:</strong></p>
+            <ul style="margin-left: 20px; line-height: 1.8;">
+                <li>Platform: Docker Compose with bridge networking for container isolation</li>
+                <li>Hyperledger Fabric: v2.5.4 (latest stable release)</li>
+                <li>Fabric CA: v1.5.7 for certificate lifecycle management</li>
+                <li>Persistence: Docker volumes for ledger data, state databases, and cryptographic material</li>
+                <li>Network Startup: ~45 seconds for complete initialization</li>
+                <li>Resource Requirements: 4 CPU cores, 8 GB RAM for local development</li>
+            </ul>
+            
+            <p><strong>Workflow Capabilities:</strong></p>
+            <ul style="margin-left: 20px; line-height: 1.8;">
+                <li>Consent Recording: eConsent data hashed (SHA-256) and recorded as blockchain transaction with timestamp</li>
+                <li>Protocol Compliance: Visit windows validated; deviations automatically flagged and alerted</li>
+                <li>Data Anchoring: SDTM domains and Define-XML metadata hashed and anchored with consent verification</li>
+                <li>Regulatory Verification: Regulators compute hashes independently and compare with blockchain records</li>
+                <li>Audit Trail: Complete transaction history preserved immutably with cryptographic proof</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#fff',
+                primaryTextColor: '#000',
+                primaryBorderColor: '#000',
+                lineColor: '#000',
+                secondaryColor: '#e8e8e8',
+                tertiaryColor: '#f5f5f5',
+                noteBkgColor: '#f9f9f9',
+                noteBorderColor: '#333',
+                fontSize: '12px',
+                fontFamily: 'Times New Roman, Georgia, serif'
+            },
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis',
+                padding: 10,
+                nodeSpacing: 40,
+                rankSpacing: 40
+            },
+            sequence: {
+                useMaxWidth: true,
+                actorMargin: 60,
+                messageMargin: 40,
+                boxMargin: 8,
+                messageAlign: 'center',
+                mirrorActors: false
+            }
+        });
+        
+        function exportSVG() {
+            const svgs = document.querySelectorAll('.mermaid svg');
+            if (svgs.length === 0) {
+                alert('Please wait for diagrams to render');
+                return;
+            }
+            
+            svgs.forEach((svg, index) => {
+                const svgData = new XMLSerializer().serializeToString(svg);
+                const blob = new Blob([svgData], { type: 'image/svg+xml' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `figure-4${String.fromCharCode(97 + index)}.svg`;
+                link.click();
+                URL.revokeObjectURL(url);
+            });
+        }
+    </script>
+</body>
+</html>
+

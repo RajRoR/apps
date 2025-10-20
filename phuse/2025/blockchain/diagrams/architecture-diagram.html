@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain Clinical Trial Architecture</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Arial', 'Helvetica', sans-serif;
+            background: white;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        .mermaid {
+            text-align: center;
+            background: white;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 5px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        button:hover { background: #2980b9; }
+        @media print {
+            .controls { display: none; }
+            body { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Blockchain-Enabled Clinical Trial Architecture</h1>
+        
+        <div class="controls">
+            <button onclick="window.print()">📥 Export PDF</button>
+            <button onclick="exportSVG()">📊 Export SVG</button>
+            <button onclick="window.location.href='architecture-diagram-bw.html'">⚫ Switch to B&W</button>
+        </div>
+        
+        <div class="mermaid">
+graph TB
+    subgraph L1["<b>LAYER 1: DATA GENERATION</b>"]
+        direction LR
+        EC["📱 eConsent<br/>Consent Docs"]
+        EDC["💻 EDC<br/>SDTM Data"]
+        LIMS["🔬 LIMS<br/>Lab Results"]
+    end
+    
+    subgraph L2["<b>LAYER 2: BLOCKCHAIN ANCHORING</b>"]
+        direction TB
+        
+        subgraph NET["Hyperledger Fabric Network"]
+            direction LR
+            SP["<b>Sponsor Peer</b><br/>(Org1)<br/>Consent Mgmt"]
+            CRO["<b>CRO Peer</b><br/>(Org2)<br/>Data Anchoring"]
+            ORD["⚙️ Orderer<br/>Consensus"]
+        end
+        
+        SC["<b>Smart Contract</b><br/>RegisterConsent()<br/>AnchorDataset()<br/>🔒 Policy Enforcement"]
+        
+        BL["<b>Blockchain Ledger</b><br/>Block 1: Genesis<br/>Block 2: CONSENT_SUBJ001<br/>Block 3: ANCHOR_DM_1.0<br/>Block N: ..."]
+    end
+    
+    subgraph L3["<b>LAYER 3: OFF-CHAIN STORAGE</b>"]
+        ST["<b>WORM Storage</b><br/>📄 consent.json (15KB)<br/>📊 DM.csv (1MB)<br/>📊 AE.csv (40MB)<br/>📊 LB.csv (400MB)<br/>✓ Encrypted • Versioned"]
+    end
+    
+    subgraph L4["<b>LAYER 4: VERIFICATION</b>"]
+        REG["<b>Regulator</b><br/>1. Receive data (eCTD)<br/>2. Query blockchain<br/>3. Compute SHA-256<br/>4. Compare hashes"]
+    end
+    
+    EC --> SP
+    EDC --> CRO
+    LIMS --> CRO
+    
+    SP --> SC
+    CRO --> SC
+    SC --> BL
+    
+    SP <--> ORD
+    CRO <--> ORD
+    ORD --> BL
+    
+    SP --> ST
+    CRO --> ST
+    
+    BL -.->|Query Hash| REG
+    ST -.->|Receive Data| REG
+    
+    classDef layer1 fill:#e3f2fd,stroke:#1565c0,stroke-width:3px,color:#000
+    classDef layer2 fill:#fff3e0,stroke:#ef6c00,stroke-width:3px,color:#000
+    classDef layer3 fill:#f3e5f5,stroke:#6a1b9a,stroke-width:3px,color:#000
+    classDef layer4 fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#000
+    classDef peer fill:#bbdefb,stroke:#1976d2,stroke-width:2px,color:#000
+    classDef contract fill:#ffccbc,stroke:#d84315,stroke-width:2px,color:#000
+    classDef storage fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
+    
+    class L1 layer1
+    class L2 layer2
+    class L3 layer3
+    class L4 layer4
+    class SP,CRO peer
+    class SC,BL contract
+    class ST storage
+        </div>
+        
+        <div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant S as 👤 Subject
+    participant Sp as 🏢 Sponsor
+    participant SC as 📜 Contract
+    participant BL as ⛓️ Ledger
+    participant C as 🏥 CRO
+    participant Reg as 🏛️ Regulator
+
+    Note over S,Reg: Consent → Data → Verify
+    
+    S->>Sp: Sign consent
+    Sp->>SC: RegisterConsent(hash)
+    SC->>BL: Store consent
+    
+    C->>C: Process SDTM
+    C->>SC: AnchorDataset(hash)
+    SC->>BL: Check consent active?
+    alt Active
+        SC->>BL: Store hash
+    else Withdrawn
+        SC-->>C: ❌ REJECTED
+    end
+    
+    Reg->>BL: Query hash
+    Reg->>Reg: Compute local hash
+    alt Match
+        Reg->>Reg: ✅ Authentic
+    else Mismatch
+        Reg->>Reg: ❌ Tampered
+    end
+        </div>
+    </div>
+    
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#fff',
+                primaryTextColor: '#000',
+                primaryBorderColor: '#333',
+                lineColor: '#333',
+                fontSize: '13px',
+                fontFamily: 'Arial, Helvetica, sans-serif'
+            },
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis',
+                padding: 15
+            },
+            sequence: {
+                useMaxWidth: true,
+                actorMargin: 80,
+                messageMargin: 50,
+                boxMargin: 10,
+                boxTextMargin: 5,
+                noteMargin: 10,
+                messageAlign: 'center'
+            }
+        });
+        
+        function exportSVG() {
+            const svg = document.querySelector('.mermaid svg');
+            if (!svg) {
+                alert('Please wait for diagram to render');
+                return;
+            }
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const blob = new Blob([svgData], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'blockchain-architecture.svg';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
+

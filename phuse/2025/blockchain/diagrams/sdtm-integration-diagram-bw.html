@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDTM Integration - B&W</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Times New Roman', 'Georgia', serif;
+            background: white;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            font-size: 22px;
+            color: #000;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .caption {
+            text-align: center;
+            font-size: 14px;
+            color: #000;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+        .mermaid {
+            text-align: center;
+            background: white;
+            margin: 20px 0;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 5px;
+            background: #000;
+            color: white;
+            border: 2px solid #000;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        button:hover { 
+            background: #333;
+            border-color: #333;
+        }
+        .description {
+            font-size: 12px;
+            line-height: 1.6;
+            margin: 20px 0;
+            text-align: justify;
+        }
+        @media print {
+            .controls { display: none; }
+            body { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Figure 3: Blockchain-Enabled SDTM Dataset Integrity Management</h1>
+        
+        <div class="controls">
+            <button onclick="window.print()">📥 Export PDF</button>
+            <button onclick="exportSVG()">📊 Export SVG</button>
+            <button onclick="window.location.href='sdtm-integration-diagram.html'">🎨 Switch to Color</button>
+        </div>
+        
+        <div class="caption">(a) Dataset Anchoring Architecture with Merkle Tree</div>
+        <div class="mermaid">
+flowchart TB
+    subgraph DataGen["SDTM Data Generation"]
+        direction TB
+        RAW["Raw Clinical Data<br/>(EDC, LIMS, eCRF)"]
+        TRANS["SDTM Transformation<br/>(SAS/Python/R)"]
+        RAW --> TRANS
+    end
+    
+    subgraph Domains["CDISC SDTM Domains"]
+        direction LR
+        DM["DM.xpt<br/>Demographics<br/>1.2 MB"]
+        AE["AE.xpt<br/>Adverse Events<br/>5.4 MB"]
+        LB["LB.xpt<br/>Laboratory<br/>28.7 MB"]
+        VS["VS.xpt<br/>Vital Signs<br/>12.3 MB"]
+        CM["CM.xpt<br/>Concomitant Meds<br/>3.8 MB"]
+        EX["EX.xpt<br/>Exposure<br/>2.1 MB"]
+    end
+    
+    subgraph Metadata["Define-XML Metadata"]
+        DEF["define.xml<br/>Metadata v2.1<br/>Dataset specs<br/>Variable defs"]
+    end
+    
+    subgraph HashComp["Cryptographic Hashing (SHA-256)"]
+        direction TB
+        H1["SHA-256(DM.xpt)<br/>a7b3c9f2..."]
+        H2["SHA-256(AE.xpt)<br/>d4e8f1a5..."]
+        H3["SHA-256(LB.xpt)<br/>9c2d6e4b..."]
+        H4["SHA-256(VS.xpt)<br/>5f7a1c8e..."]
+        H5["SHA-256(CM.xpt)<br/>3b9e2d7f..."]
+        H6["SHA-256(EX.xpt)<br/>8d4c1a6b..."]
+        HDEF["SHA-256(define.xml)<br/>2e5f8a9c..."]
+    end
+    
+    subgraph Merkle["Merkle Tree Construction"]
+        direction TB
+        ROOT["Merkle Root<br/>6f8e2a9d4c1b7e5a..."]
+        L1["Hash(H1+H2)<br/>c5d8e2f9..."]
+        L2["Hash(H3+H4)<br/>a3b7f4e1..."]
+        L3["Hash(H5+H6)<br/>9d2e6c8a..."]
+        
+        L1 --> ROOT
+        L2 --> ROOT
+        L3 --> ROOT
+    end
+    
+    subgraph Blockchain["Blockchain Anchoring"]
+        direction TB
+        SC["Smart Contract:<br/>AnchorDataset()"]
+        B1["Block N+1<br/>ANCHOR_DM_1.0"]
+        B2["Block N+2<br/>ANCHOR_AE_1.0"]
+        B3["Block N+3<br/>ANCHOR_COLLECTION_1.0<br/>merkleRoot"]
+        B4["Block N+4<br/>ANCHOR_DEFINE_2.1"]
+    end
+    
+    TRANS --> Domains
+    Domains --> DM & AE & LB & VS & CM & EX
+    TRANS --> Metadata
+    
+    DM --> H1
+    AE --> H2
+    LB --> H3
+    VS --> H4
+    CM --> H5
+    EX --> H6
+    DEF --> HDEF
+    
+    H1 --> L1
+    H2 --> L1
+    H3 --> L2
+    H4 --> L2
+    H5 --> L3
+    H6 --> L3
+    
+    H1 & H2 --> SC
+    ROOT --> SC
+    HDEF --> SC
+    
+    SC --> B1
+    SC --> B2
+    SC --> B3
+    SC --> B4
+    
+    style DataGen fill:#fff,stroke:#000,stroke-width:2px,stroke-dasharray: 5 5
+    style Domains fill:#e8e8e8,stroke:#000,stroke-width:2px
+    style Metadata fill:#fff,stroke:#000,stroke-width:2px,stroke-dasharray: 3 3
+    style HashComp fill:#f0f0f0,stroke:#000,stroke-width:2px
+    style Merkle fill:#d8d8d8,stroke:#000,stroke-width:3px
+    style Blockchain fill:#c8c8c8,stroke:#000,stroke-width:3px
+        </div>
+        
+        <div class="caption">(b) Regulatory Verification Workflow</div>
+        <div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant CRO as CRO
+    participant Hash as Hash Util
+    participant SC as Contract
+    participant BL as Ledger
+    participant Reg as Regulator
+    participant FDA as FDA/EMA
+
+    rect rgb(245, 245, 245)
+    Note over CRO,BL: Submission Prep
+    CRO->>Hash: SHA-256(DM.xpt)
+    Hash-->>CRO: a7b3c9f2...
+    CRO->>Hash: SHA-256(AE.xpt)
+    Hash-->>CRO: d4e8f1a5...
+    CRO->>Hash: Build Merkle Tree
+    Hash-->>CRO: Root: 6f8e2a9d...
+    end
+    
+    rect rgb(235, 235, 235)
+    Note over CRO,BL: Anchoring
+    CRO->>SC: AnchorDataset()
+    SC->>BL: Store anchors
+    BL-->>SC: Confirmed
+    
+    CRO->>SC: AnchorCollection()
+    SC->>BL: Store merkleRoot
+    BL-->>SC: Confirmed
+    end
+    
+    rect rgb(250, 250, 250)
+    Note over Reg,FDA: Verification
+    CRO->>Reg: Submit eCTD
+    
+    Reg->>Hash: SHA-256(DM.xpt)
+    Hash-->>Reg: a7b3c9f2...
+    
+    Reg->>BL: Query anchor
+    BL-->>Reg: hash: a7b3c9f2...
+    
+    Reg->>Reg: Compare
+    alt Match
+        Reg->>FDA: Authentic
+    else Mismatch
+        Reg->>FDA: Tampered
+    end
+    end
+    
+    rect rgb(240, 240, 240)
+    Note over Reg,FDA: Merkle Verify
+    Reg->>Hash: Rebuild tree
+    Hash-->>Reg: Root: 6f8e2a9d...
+    
+    Reg->>BL: Query collection
+    BL-->>Reg: merkleRoot
+    
+    Reg->>Reg: Compare roots
+    alt Match
+        Reg->>FDA: Collection OK
+    else Mismatch
+        Reg->>FDA: Domain altered
+    end
+    end
+        </div>
+        
+        <div class="description">
+            <strong>Figure 3.</strong> Integration of CDISC SDTM datasets with blockchain anchoring system. 
+            (a) Shows the complete workflow from raw data through SDTM transformation, SHA-256 hash computation, 
+            Merkle tree construction, and blockchain anchoring. Each SDTM domain (DM.xpt, AE.xpt, LB.xpt, VS.xpt, 
+            CM.xpt, EX.xpt) is hashed individually. For efficient collection anchoring, domain hashes are organized 
+            in a Merkle tree, providing a single root hash for validation of the entire dataset package without 
+            storing sensitive information on-chain. Define-XML metadata is similarly hashed and anchored to ensure 
+            metadata integrity. Different fill patterns distinguish processing stages for grayscale printing. 
+            (b) Demonstrates the four-phase regulatory verification workflow where regulators independently compute 
+            hashes, query blockchain for anchored values, and compare to verify dataset authenticity. The Merkle 
+            tree approach enables efficient verification of multi-domain submissions through a single root comparison. 
+            Shaded regions distinguish sequential phases.
+        </div>
+        
+        <div class="description" style="margin-top: 20px;">
+            <strong>Implementation Details:</strong>
+            <ul style="margin-left: 20px; margin-top: 10px; line-height: 1.8;">
+                <li>SHA-256 hashing achieves ~200 MB/sec throughput, enabling sub-second verification of typical SDTM domains</li>
+                <li>Merkle trees reduce on-chain storage from N domain hashes to a single root hash (32 bytes)</li>
+                <li>Define-XML anchoring ensures metadata-data consistency required for FDA eCTD submissions</li>
+                <li>Smart contract enforces that active consent exists before allowing dataset anchoring (21 CFR Part 11 compliance)</li>
+                <li>Blockchain timestamps provide tamper-proof evidence of when datasets were finalized</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#fff',
+                primaryTextColor: '#000',
+                primaryBorderColor: '#000',
+                lineColor: '#000',
+                secondaryColor: '#e8e8e8',
+                tertiaryColor: '#f5f5f5',
+                noteBkgColor: '#f9f9f9',
+                noteBorderColor: '#333',
+                fontSize: '13px',
+                fontFamily: 'Times New Roman, Georgia, serif'
+            },
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis',
+                padding: 15,
+                nodeSpacing: 50,
+                rankSpacing: 50
+            },
+            sequence: {
+                useMaxWidth: true,
+                actorMargin: 70,
+                messageMargin: 45,
+                boxMargin: 8,
+                messageAlign: 'center',
+                mirrorActors: false
+            }
+        });
+        
+        function exportSVG() {
+            const svgs = document.querySelectorAll('.mermaid svg');
+            if (svgs.length === 0) {
+                alert('Please wait for diagrams to render');
+                return;
+            }
+            
+            svgs.forEach((svg, index) => {
+                const svgData = new XMLSerializer().serializeToString(svg);
+                const blob = new Blob([svgData], { type: 'image/svg+xml' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `figure-3${String.fromCharCode(97 + index)}.svg`;
+                link.click();
+                URL.revokeObjectURL(url);
+            });
+        }
+    </script>
+</body>
+</html>
+

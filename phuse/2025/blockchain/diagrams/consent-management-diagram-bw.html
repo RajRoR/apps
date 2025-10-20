@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consent Management - B&W</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Times New Roman', 'Georgia', serif;
+            background: white;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            font-size: 22px;
+            color: #000;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .caption {
+            text-align: center;
+            font-size: 14px;
+            color: #000;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+        .mermaid {
+            text-align: center;
+            background: white;
+            margin: 20px 0;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 5px;
+            background: #000;
+            color: white;
+            border: 2px solid #000;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        button:hover { 
+            background: #333;
+            border-color: #333;
+        }
+        .description {
+            font-size: 12px;
+            line-height: 1.6;
+            margin: 20px 0;
+            text-align: justify;
+        }
+        .features {
+            margin: 30px 0;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+        .features h3 {
+            font-size: 13px;
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+        @media print {
+            .controls { display: none; }
+            body { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Figure 2: Blockchain-Enabled Patient Consent Governance</h1>
+        
+        <div class="controls">
+            <button onclick="window.print()">📥 Export PDF</button>
+            <button onclick="exportSVG()">📊 Export SVG</button>
+            <button onclick="window.location.href='consent-management-diagram.html'">🎨 Switch to Color</button>
+        </div>
+        
+        <div class="caption">(a) Consent State Machine and Access Control</div>
+        <div class="mermaid">
+stateDiagram-v2
+    [*] --> Pending: Patient invited
+    
+    Pending --> Active: Patient signs<br/>(RegisterConsent)
+    Pending --> [*]: Declines
+    
+    Active --> Amended: Protocol amendment<br/>(UpdateConsent v2)
+    Amended --> Active: Re-consents
+    Amended --> Withdrawn: Refuses amendment
+    
+    Active --> Withdrawn: Withdraws<br/>(UpdateConsent)
+    Withdrawn --> Reactivated: Re-consents<br/>(RegisterConsent v3)
+    Reactivated --> Active
+    
+    Active --> AccessGranted: Smart Contract<br/>permits data use
+    Withdrawn --> AccessBlocked: Smart Contract<br/>blocks data use
+    
+    AccessGranted --> Active
+    AccessBlocked --> Withdrawn
+    
+    note right of Active
+        Blockchain Record:
+        Timestamp: 2025-01-15T10:00:00Z
+        Hash: d50ed1ef...
+        Status: ACTIVE
+        Version: v2
+    end note
+    
+    note right of Withdrawn
+        Enforcement:
+        CRO cannot anchor data
+        Queries return NO CONSENT
+        Audit trail preserved
+    end note
+        </div>
+        
+        <div class="caption">(b) Consent Event Flow with Smart Contract Enforcement</div>
+        <div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant P as Patient
+    participant EP as eConsent
+    participant SP as Sponsor
+    participant SC as Contract
+    participant BL as Ledger
+    participant CRO as CRO
+    participant PP as Portal
+
+    rect rgb(245, 245, 245)
+    Note over P,BL: Initial Consent
+    P->>EP: Sign consent v1
+    EP->>SP: Submit
+    SP->>SC: RegisterConsent(v1)
+    SC->>BL: status=ACTIVE
+    SC-->>PP: Update portal
+    end
+    
+    rect rgb(255, 255, 255)
+    Note over CRO,BL: Data Collection (Approved)
+    CRO->>SC: AnchorDataset(DM.csv)
+    SC->>BL: Check consent?
+    BL-->>SC: ACTIVE
+    SC->>BL: Store hash
+    SC-->>CRO: Approved
+    end
+    
+    rect rgb(240, 240, 240)
+    Note over P,CRO: Withdrawal (Blocks Access)
+    P->>EP: Withdraw
+    EP->>SP: Submit withdrawal
+    SP->>SC: UpdateConsent(WITHDRAWN)
+    SC->>BL: status=WITHDRAWN
+    SC-->>PP: Update portal
+    
+    CRO->>SC: AnchorDataset(AE.csv)
+    SC->>BL: Check consent?
+    BL-->>SC: WITHDRAWN
+    SC-->>CRO: REJECTED
+    end
+    
+    rect rgb(235, 235, 235)
+    Note over P,CRO: Re-consent (Restores Access)
+    P->>EP: Re-sign v2
+    EP->>SP: Submit
+    SP->>SC: RegisterConsent(v2)
+    SC->>BL: status=ACTIVE
+    
+    CRO->>SC: AnchorDataset(LB.csv)
+    SC->>BL: Check consent?
+    BL-->>SC: ACTIVE
+    SC-->>CRO: Approved
+    end
+        </div>
+        
+        <div class="description">
+            <strong>Figure 2.</strong> Dynamic consent management through blockchain state machine. 
+            (a) Shows consent lifecycle states with automated access control enforcement. 
+            Solid arrows indicate consent status transitions; dashed arrows show smart contract 
+            access decisions. (b) Demonstrates four key scenarios: initial consent registration, 
+            approved data collection, withdrawal blocking subsequent data anchoring, and re-consent 
+            restoring access. Shaded regions distinguish sequential phases. Smart contracts enforce 
+            consent policies at the protocol level, eliminating manual verification workflows.
+        </div>
+        
+        <div class="features">
+            <h3>Dynamic Consent Features:</h3>
+            
+            <p><strong>Access Enforcement:</strong> Smart contracts automatically block data usage 
+            when consent is withdrawn. The CRO cannot anchor new datasets; queries return "NO CONSENT" 
+            errors. Enforcement is immediate and occurs at the blockchain protocol level, requiring 
+            no manual intervention.</p>
+            
+            <p><strong>Version Traceability:</strong> Complete historical record of all consent 
+            versions stored immutably on the blockchain. Each version includes unique cryptographic 
+            hash, precise timestamp, status flag, and version identifier. Provides full audit trail 
+            for regulatory inspection and 21 CFR Part 11 compliance.</p>
+            
+            <p><strong>Patient Transparency:</strong> Participant-facing web portals display current 
+            consent status in real-time by querying the blockchain. Patients can view complete consent 
+            history, initiate withdrawal at any time, and track how their data is being used—supporting 
+            true informed consent and GDPR "right to be forgotten" requirements.</p>
+        </div>
+    </div>
+    
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#fff',
+                primaryTextColor: '#000',
+                primaryBorderColor: '#000',
+                lineColor: '#000',
+                secondaryColor: '#e8e8e8',
+                tertiaryColor: '#f5f5f5',
+                noteBkgColor: '#f9f9f9',
+                noteBorderColor: '#333',
+                fontSize: '13px',
+                fontFamily: 'Times New Roman, Georgia, serif'
+            },
+            stateDiagram: {
+                useMaxWidth: true
+            },
+            sequence: {
+                useMaxWidth: true,
+                actorMargin: 70,
+                messageMargin: 45,
+                boxMargin: 8,
+                messageAlign: 'center',
+                mirrorActors: false
+            }
+        });
+        
+        function exportSVG() {
+            const svgs = document.querySelectorAll('.mermaid svg');
+            if (svgs.length === 0) {
+                alert('Please wait for diagrams to render');
+                return;
+            }
+            
+            svgs.forEach((svg, index) => {
+                const svgData = new XMLSerializer().serializeToString(svg);
+                const blob = new Blob([svgData], { type: 'image/svg+xml' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `figure-2${String.fromCharCode(97 + index)}.svg`;
+                link.click();
+                URL.revokeObjectURL(url);
+            });
+        }
+    </script>
+</body>
+</html>
+

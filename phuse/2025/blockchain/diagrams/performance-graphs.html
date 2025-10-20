@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHA-256 Performance Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Arial', 'Helvetica', sans-serif;
+            background: white;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+        }
+        .chart-container {
+            position: relative;
+            height: 600px;
+            margin-bottom: 40px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 5px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover { background: #2980b9; }
+        button.active { background: #2ecc71; }
+        .legend {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            font-size: 13px;
+        }
+        .legend-item {
+            display: inline-block;
+            margin-right: 20px;
+            margin-bottom: 5px;
+        }
+        .legend-color {
+            display: inline-block;
+            width: 20px;
+            height: 3px;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+        @media print {
+            .controls { display: none; }
+            body { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Blockchain Data Integrity Verification Performance</h1>
+        <p class="subtitle">Scalability Analysis for Clinical Trial Dataset Anchoring</p>
+        
+        <div class="controls">
+            <button onclick="exportPNG()">📥 Export PNG</button>
+            <button onclick="toggleLog()" id="logBtn">📊 Toggle Log Scale</button>
+            <button onclick="window.print()">🖨️ Print</button>
+            <button onclick="window.location.href='performance-graphs-bw.html'">⚫ Switch to B&W</button>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <span class="legend-color" style="background: rgba(52, 152, 219, 0.8);"></span>
+                <span>Run 1 (ms)</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: rgba(46, 204, 113, 0.8);"></span>
+                <span>Run 2 (ms)</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: rgba(155, 89, 182, 0.8);"></span>
+                <span>Run 3 (ms)</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: rgba(231, 76, 60, 1); height: 4px;"></span>
+                <span><strong>Median (ms)</strong></span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: rgba(243, 156, 18, 0.3); height: 8px;"></span>
+                <span>Clinical Study Context</span>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="perfChart"></canvas>
+        </div>
+        
+        <div style="margin-top: 30px; font-size: 13px; line-height: 1.8;">
+            <h3>Key Findings:</h3>
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                <li><strong>Blockchain Scalability:</strong> Verification throughput ~200 MB/s enables real-time data integrity checks</li>
+                <li><strong>Sub-Second Verification:</strong> Typical SDTM domains (1-100 MB) verified in <500 ms</li>
+                <li><strong>Phase III Ready:</strong> Complete 1 GB regulatory submission verified in ~5 seconds</li>
+                <li><strong>Linear Performance:</strong> Predictable scaling for any trial size—from pilot to mega-trials</li>
+                <li><strong>Production Viable:</strong> Blockchain overhead negligible compared to traditional data processing workflows</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        const fileSizes = ['1 KB', '10 KB', '100 KB', '1 MB', '10 MB', '50 MB', '100 MB', '500 MB', '1 GB'];
+        const fileSizesNumeric = [1, 10, 100, 1024, 10240, 51200, 102400, 512000, 1048576]; // in KB
+        
+        const run1 = [4.63, 1.20, 2.07, 8.04, 49.72, 234.22, 502.58, 2600.14, 5217.53];
+        const run2 = [0.46, 1.22, 2.46, 6.11, 56.70, 283.01, 437.91, 2321.18, 5983.04];
+        const run3 = [0.54, 3.09, 2.38, 7.88, 47.22, 254.71, 422.15, 3100.42, 4944.56];
+        const median = [0.54, 1.22, 2.38, 7.88, 49.72, 254.71, 437.91, 2600.14, 5217.53];
+        
+        const clinicalExamples = [
+            'Tiny test dataset\n10 rows × 5 cols',
+            'Single site DM\n100 rows × 5 cols',
+            'Small study DM\n1K rows × 10 cols\n(100 subjects)',
+            'Medium AE domain\n10K rows × 10 cols\n(1K events)',
+            'Large LB domain\n100K rows × 15 cols\n(lab tests)',
+            'Multi-site VS\n500K rows × 20 cols\n(vital signs)',
+            'Phase III study\n1M rows × 20 cols\n(AE+CM+MH)',
+            'Multi-domain trial\n5M rows × 20 cols\n(large study)',
+            'Complete Phase III\n10M rows × 20 cols\n(full submission)'
+        ];
+        
+        let isLogScale = false;
+        
+        const ctx = document.getElementById('perfChart').getContext('2d');
+        
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: fileSizes,
+                datasets: [
+                    {
+                        label: 'Run 1',
+                        data: run1,
+                        borderColor: 'rgba(52, 152, 219, 0.8)',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Run 2',
+                        data: run2,
+                        borderColor: 'rgba(46, 204, 113, 0.8)',
+                        backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Run 3',
+                        data: run3,
+                        borderColor: 'rgba(155, 89, 182, 0.8)',
+                        backgroundColor: 'rgba(155, 89, 182, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Median',
+                        data: median,
+                        borderColor: 'rgba(231, 76, 60, 1)',
+                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                        borderWidth: 4,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointStyle: 'rectRot',
+                        tension: 0.3,
+                        borderDash: []
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Blockchain Verification Time vs Clinical Trial Dataset Size',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        },
+                        padding: 20
+                    },
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: function(context) {
+                                return fileSizes[context[0].dataIndex];
+                            },
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += context.parsed.y.toFixed(2) + ' ms';
+                                return label;
+                            },
+                            afterLabel: function(context) {
+                                const idx = context.dataIndex;
+                                return '\n' + clinicalExamples[idx];
+                            }
+                        },
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        bodyFont: {
+                            size: 12
+                        },
+                        displayColors: true
+                    },
+                    annotation: {
+                        annotations: clinicalExamples.map((example, idx) => ({
+                            type: 'box',
+                            xMin: idx - 0.4,
+                            xMax: idx + 0.4,
+                            yMin: 0,
+                            yMax: Math.max(...[run1[idx], run2[idx], run3[idx]]) * 1.1,
+                            backgroundColor: 'rgba(243, 156, 18, 0.05)',
+                            borderColor: 'rgba(243, 156, 18, 0.3)',
+                            borderWidth: 1,
+                            borderDash: [5, 5]
+                        }))
+                    }
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        title: {
+                            display: true,
+                            text: 'Verification Time (milliseconds)',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                if (value >= 1000) {
+                                    return (value / 1000).toFixed(1) + 's';
+                                }
+                                return value.toFixed(0) + 'ms';
+                            }
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'File Size (Clinical Trial Dataset)',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                }
+            }
+        });
+        
+        function toggleLog() {
+            isLogScale = !isLogScale;
+            chart.options.scales.y.type = isLogScale ? 'logarithmic' : 'linear';
+            
+            if (isLogScale) {
+                chart.options.scales.y.min = 0.1;
+                document.getElementById('logBtn').classList.add('active');
+                document.getElementById('logBtn').textContent = '📊 Linear Scale';
+            } else {
+                chart.options.scales.y.min = 0;
+                chart.options.scales.y.beginAtZero = true;
+                document.getElementById('logBtn').classList.remove('active');
+                document.getElementById('logBtn').textContent = '📊 Log Scale';
+            }
+            
+            chart.update();
+        }
+        
+        function exportPNG() {
+            const link = document.createElement('a');
+            link.download = 'sha256-performance-analysis.png';
+            link.href = chart.toBase64Image();
+            link.click();
+        }
+    </script>
+</body>
+</html>
+

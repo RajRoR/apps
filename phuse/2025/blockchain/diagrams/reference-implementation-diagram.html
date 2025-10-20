@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reference Implementation - Colored</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Arial', 'Helvetica', sans-serif;
+            background: white;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        .caption {
+            text-align: center;
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+        .mermaid {
+            text-align: center;
+            background: white;
+            margin: 20px 0;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 5px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        button:hover { background: #2980b9; }
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 30px auto;
+            max-width: 1200px;
+        }
+        .tech-box {
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid;
+            background: #f8f9fa;
+        }
+        .tech-box h3 {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        .tech-box ul {
+            font-size: 12px;
+            line-height: 1.6;
+            margin-left: 20px;
+        }
+        .tech-1 { border-left-color: #3498db; }
+        .tech-2 { border-left-color: #2ecc71; }
+        .tech-3 { border-left-color: #f39c12; }
+        @media print {
+            .controls { display: none; }
+            body { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hyperledger Fabric Reference Implementation</h1>
+        
+        <div class="controls">
+            <button onclick="window.print()">📥 Export PDF</button>
+            <button onclick="exportSVG()">📊 Export SVG</button>
+            <button onclick="window.location.href='reference-implementation-diagram-bw.html'">⚫ Switch to B&W</button>
+        </div>
+        
+        <div class="caption">Figure 4: Dockerized Four-Organization Network Architecture</div>
+        <div class="mermaid">
+graph TB
+    subgraph Docker["🐳 Docker Compose Environment (Hyperledger Fabric 2.5)"]
+        
+        subgraph Channel1["Channel: clinicaltrial"]
+            
+            subgraph Org1["Organization 1: SPONSOR"]
+                SP_PEER["Peer0.sponsor<br/>:7051<br/>• CouchDB<br/>• Consent Mgmt<br/>• Protocol Compliance"]
+                SP_CA["CA.sponsor<br/>:7054<br/>X.509 Certs"]
+                SP_API["REST API<br/>:3001<br/>Gateway"]
+            end
+            
+            subgraph Org2["Organization 2: CRO"]
+                CRO_PEER["Peer0.cro<br/>:8051<br/>• CouchDB<br/>• Data Anchoring<br/>• SDTM Hash"]
+                CRO_CA["CA.cro<br/>:8054<br/>X.509 Certs"]
+                CRO_API["REST API<br/>:3002<br/>Gateway"]
+            end
+            
+            subgraph Org3["Organization 3: SITE"]
+                SITE_PEER["Peer0.site<br/>:9051<br/>• CouchDB<br/>• Visit Recording<br/>• Deviation Alerts"]
+                SITE_CA["CA.site<br/>:9054<br/>X.509 Certs"]
+                SITE_API["REST API<br/>:3003<br/>Gateway"]
+            end
+            
+            subgraph Org4["Organization 4: REGULATOR"]
+                REG_PEER["Peer0.regulator<br/>:10051<br/>• CouchDB<br/>• Read-Only<br/>• Verification"]
+                REG_CA["CA.regulator<br/>:10054<br/>X.509 Certs"]
+                REG_API["REST API<br/>:3004<br/>Gateway"]
+            end
+        end
+        
+        subgraph Channel2["Channel: audittrail (Regulator only)"]
+            AUDIT["Audit Events<br/>Compliance Logs<br/>Deviation Records"]
+        end
+        
+        subgraph Ordering["Ordering Service (Raft Consensus)"]
+            ORD1["Orderer0<br/>:7050<br/>Leader"]
+            ORD2["Orderer1<br/>:8050<br/>Follower"]
+            ORD3["Orderer2<br/>:9050<br/>Follower"]
+        end
+        
+        subgraph Chaincode["Smart Contracts (TypeScript)"]
+            CC1["consentcc<br/>RegisterConsent()<br/>UpdateConsent()<br/>GetConsent()"]
+            CC2["datacc<br/>AnchorDataset()<br/>AnchorDefineXML()<br/>VerifyHash()"]
+            CC3["protocolcc<br/>ValidateVisitWindow()<br/>RecordDeviation()<br/>TriggerAlert()"]
+        end
+    end
+    
+    SP_PEER <--> ORD1
+    CRO_PEER <--> ORD1
+    SITE_PEER <--> ORD1
+    REG_PEER <--> ORD1
+    
+    ORD1 <--> ORD2
+    ORD2 <--> ORD3
+    
+    SP_PEER --> CC1
+    CRO_PEER --> CC2
+    SITE_PEER --> CC3
+    REG_PEER -.->|Query| CC1 & CC2 & CC3
+    
+    REG_PEER --> AUDIT
+    
+    SP_API --> SP_PEER
+    CRO_API --> CRO_PEER
+    SITE_API --> SITE_PEER
+    REG_API --> REG_PEER
+    
+    style Docker fill:#ecf0f1,stroke:#2c3e50,stroke-width:3px
+    style Channel1 fill:#e8f5e9,stroke:#43a047,stroke-width:2px
+    style Channel2 fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    style Ordering fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    style Chaincode fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    
+    style Org1 fill:#bbdefb,stroke:#1976d2,stroke-width:2px
+    style Org2 fill:#c8e6c9,stroke:#43a047,stroke-width:2px
+    style Org3 fill:#ffe0b2,stroke:#f57c00,stroke-width:2px
+    style Org4 fill:#f8bbd0,stroke:#c2185b,stroke-width:2px
+        </div>
+        
+        <div class="caption">Figure 5: Complete Workflow - Consent to Verification</div>
+        <div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant Patient as 👤 Patient
+    participant Site as 🏥 Site
+    participant Sponsor as 🏢 Sponsor
+    participant CRO as 🔬 CRO
+    participant Chain as ⛓️ Chaincode
+    participant Ledger as 📖 Ledger
+    participant Reg as 🏛️ Regulator
+
+    rect rgb(232, 245, 233)
+    Note over Patient,Ledger: Phase 1: Consent Recording
+    Patient->>Site: Sign eConsent
+    Site->>Sponsor: Submit consent data
+    Sponsor->>Sponsor: Compute SHA-256(consent)
+    Sponsor->>Chain: consentcc.RegisterConsent()
+    Chain->>Chain: Validate structure
+    Chain->>Ledger: Write transaction
+    Ledger-->>Chain: Block committed
+    Chain-->>Sponsor: Success: consent_v1 recorded
+    end
+    
+    rect rgb(227, 242, 253)
+    Note over Site,Ledger: Phase 2: Protocol Compliance Validation
+    Site->>Site: Patient visit (Day 7)
+    Site->>Chain: protocolcc.ValidateVisitWindow()
+    Chain->>Chain: Check: Day 7±2 window?
+    alt Within Window
+        Chain->>Ledger: Record: visit compliant
+        Chain-->>Site: Visit accepted
+    else Outside Window
+        Chain->>Ledger: Record: protocol deviation
+        Chain-->>Site: ALERT: Deviation detected
+        Chain-->>Sponsor: Notify: deviation alert
+    end
+    end
+    
+    rect rgb(255, 243, 224)
+    Note over CRO,Ledger: Phase 3: SDTM Data Anchoring
+    CRO->>CRO: Process raw data → SDTM
+    CRO->>CRO: Generate DM.xpt, AE.xpt, LB.xpt
+    CRO->>CRO: Compute SHA-256(DM.xpt)
+    CRO->>Chain: datacc.AnchorDataset("DM_1.0")
+    Chain->>Ledger: Check active consent?
+    Ledger-->>Chain: Consent active ✓
+    Chain->>Ledger: Write anchor record
+    Chain-->>CRO: Success: DM_1.0 anchored
+    
+    CRO->>CRO: Create define.xml v2.1
+    CRO->>CRO: Compute SHA-256(define.xml)
+    CRO->>Chain: datacc.AnchorDefineXML()
+    Chain->>Ledger: Write metadata anchor
+    Chain-->>CRO: Success: define.xml anchored
+    end
+    
+    rect rgb(248, 243, 255)
+    Note over Reg,Ledger: Phase 4: Regulatory Verification
+    CRO->>Reg: Submit eCTD package
+    Note right of Reg: Package includes:<br/>DM.xpt, AE.xpt, LB.xpt<br/>define.xml
+    
+    Reg->>Reg: Compute SHA-256(DM.xpt)
+    Reg->>Chain: datacc.GetAnchor("ANCHOR_DM_1.0")
+    Chain->>Ledger: Query anchor record
+    Ledger-->>Chain: Return hash + timestamp
+    Chain-->>Reg: hash: a7b3c9f2..., ts: 2025-01-15
+    
+    Reg->>Reg: Compare: local vs blockchain
+    alt Hashes Match
+        Reg->>Reg: ✓ Dataset authentic
+    else Hashes Mismatch
+        Reg->>Reg: ✗ Dataset tampered
+    end
+    
+    Reg->>Chain: consentcc.GetConsent("SUBJ001_v1")
+    Chain->>Ledger: Query consent
+    Ledger-->>Chain: Return consent record
+    Chain-->>Reg: status: active, timestamp: ...
+    Reg->>Reg: ✓ Verify consent was active<br/>when data was collected
+    end
+        </div>
+        
+        <div class="tech-stack">
+            <div class="tech-box tech-1">
+                <h3>Infrastructure Components</h3>
+                <ul>
+                    <li>4 Peer Nodes (7051, 8051, 9051, 10051)</li>
+                    <li>3 Orderers (Raft consensus)</li>
+                    <li>4 Certificate Authorities</li>
+                    <li>4 CouchDB instances (world state)</li>
+                    <li>2 Channels (clinicaltrial, audittrail)</li>
+                    <li>4 REST API Gateways</li>
+                </ul>
+            </div>
+            
+            <div class="tech-box tech-2">
+                <h3>Chaincode Modules</h3>
+                <ul>
+                    <li><strong>consentcc:</strong> Consent lifecycle mgmt</li>
+                    <li><strong>datacc:</strong> SDTM/Define-XML anchoring</li>
+                    <li><strong>protocolcc:</strong> Visit window validation</li>
+                    <li>Language: TypeScript</li>
+                    <li>Framework: fabric-contract-api</li>
+                    <li>Endorsement: Majority policy</li>
+                </ul>
+            </div>
+            
+            <div class="tech-box tech-3">
+                <h3>Deployment Specifications</h3>
+                <ul>
+                    <li>Platform: Docker Compose</li>
+                    <li>Fabric Version: 2.5.4</li>
+                    <li>Fabric CA: 1.5.7</li>
+                    <li>Network: Bridge (internal)</li>
+                    <li>Persistence: Docker volumes</li>
+                    <li>Startup Time: ~45 seconds</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#fff',
+                primaryTextColor: '#000',
+                primaryBorderColor: '#333',
+                lineColor: '#333',
+                fontSize: '12px',
+                fontFamily: 'Arial, Helvetica, sans-serif'
+            },
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis',
+                padding: 10,
+                nodeSpacing: 40,
+                rankSpacing: 40
+            },
+            sequence: {
+                useMaxWidth: true,
+                actorMargin: 70,
+                messageMargin: 45,
+                boxMargin: 8,
+                messageAlign: 'center'
+            }
+        });
+        
+        function exportSVG() {
+            const svgs = document.querySelectorAll('.mermaid svg');
+            if (svgs.length === 0) {
+                alert('Please wait for diagrams to render');
+                return;
+            }
+            
+            svgs.forEach((svg, index) => {
+                const svgData = new XMLSerializer().serializeToString(svg);
+                const blob = new Blob([svgData], { type: 'image/svg+xml' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `reference-implementation-${index + 1}.svg`;
+                link.click();
+                URL.revokeObjectURL(url);
+            });
+        }
+    </script>
+</body>
+</html>
+
