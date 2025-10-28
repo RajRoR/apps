@@ -6,28 +6,21 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 FS="${FABRIC_SAMPLES:-$PROJECT_ROOT/fabric-samples}"
 
-CONSENT=data/consent_SUBJ001_v2.json
-HASH=$(python3 scripts/hash_sdtm.py json $CONSENT | awk -F= '/SHA256/ {print $2}')
-CANON=$(python3 - <<EOF
-import json,sys
-print(json.dumps(json.load(open("$CONSENT")), separators=(',',':'), sort_keys=True))
-EOF
-)
-
-# Fill payloadHash into the canonical JSON (for record completeness)
-CONSENT_CANON=$(python3 - <<EOF
-import json
-obj = json.loads('''$CANON''')
-obj["payloadHash"]="$HASH"
-print(json.dumps(obj, separators=(',',':')))
-EOF
+FILE=data/AE.csv
+HASH=$(python3 scripts/hash_sdtm.py csv $FILE | awk -F= '/SHA256/ {print $2}')
+ANCHOR_JSON=$(cat <<JSON
+{"domain":"AE","version":"1.0","fileName":"AE.csv","sha256":"$HASH","createdAt":"2025-10-18T12:05:00Z","creator":"DataManager"}
+JSON
 )
 
 # Escape the JSON for use in the chaincode argument
-CONSENT_CANON_ESCAPED=$(echo "$CONSENT_CANON" | sed 's/"/\\"/g')
+ANCHOR_JSON_ESCAPED=$(echo "$ANCHOR_JSON" | sed 's/"/\\"/g')
 
-# Invoke via Org1 peer (Sponsor)
 pushd "$FS/test-network" >/dev/null
+
+# Set up Fabric binaries path
+export PATH="${PWD}/../bin:$PATH"
+export FABRIC_CFG_PATH="${PWD}/../config/"
 
 # Satisfy envVar.sh expectations (it runs with set -u)
 export VERBOSE=${VERBOSE:-false}
@@ -40,13 +33,13 @@ export DOCKER_SOCK=${DOCKER_SOCK:-/var/run/docker.sock}
 
 . ./scripts/envVar.sh
 
-setGlobals 1  # Org1 = Sponsor
+setGlobals 2  # Org2 = QC Team
 peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com \
   --tls --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
   -C clinicaltrial -n clinicalcc \
   --peerAddresses localhost:7051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt \
   --peerAddresses localhost:9051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt \
-  -c "{\"Args\":[\"RegisterConsent\",\"SUBJ001_v2\",\"$CONSENT_CANON_ESCAPED\",\"$HASH\"]}"
+  -c "{\"Args\":[\"AnchorDataset\",\"ANCHOR_AE_1.0\",\"$ANCHOR_JSON_ESCAPED\"]}"
 popd >/dev/null
 
-echo -e "\033[0;32mConsent registered by the Sponsor.\033[0m HASH=\033[1;33m$HASH\033[0m"
+echo -e "\033[0;32mAE dataset anchored.\033[0m HASH=\033[1;33m$HASH\033[0m"

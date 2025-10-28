@@ -9,7 +9,7 @@ FS="${FABRIC_SAMPLES:-$PROJECT_ROOT/fabric-samples}"
 FILE=data/DM.csv
 HASH=$(python3 scripts/hash_sdtm.py csv $FILE | awk -F= '/SHA256/ {print $2}')
 ANCHOR_JSON=$(cat <<JSON
-{"domain":"DM","version":"1.0","fileName":"DM.csv","sha256":"$HASH","createdAt":"2025-10-18T12:00:00Z"}
+{"domain":"DM","version":"1.0","fileName":"DM.csv","sha256":"$HASH","createdAt":"2025-10-18T12:00:00Z","creator":"StatisticalProgrammer"}
 JSON
 )
 
@@ -17,6 +17,10 @@ JSON
 ANCHOR_JSON_ESCAPED=$(echo "$ANCHOR_JSON" | sed 's/"/\\"/g')
 
 pushd "$FS/test-network" >/dev/null
+
+# Set up Fabric binaries path
+export PATH="${PWD}/../bin:$PATH"
+export FABRIC_CFG_PATH="${PWD}/../config/"
 
 # Satisfy envVar.sh expectations (it runs with set -u)
 export VERBOSE=${VERBOSE:-false}
@@ -29,7 +33,7 @@ export DOCKER_SOCK=${DOCKER_SOCK:-/var/run/docker.sock}
 
 . ./scripts/envVar.sh
 
-setGlobals 2  # Org2 = CRO
+setGlobals 1  # Org1 = Statistical Computing Team
 peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com \
   --tls --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
   -C clinicaltrial -n clinicalcc \
@@ -38,4 +42,5 @@ peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.exa
   -c "{\"Args\":[\"AnchorDataset\",\"ANCHOR_DM_1.0\",\"$ANCHOR_JSON_ESCAPED\"]}"
 popd >/dev/null
 
-echo -e "\033[0;32mDM anchored by the CRO.\033[0m HASH=\033[1;33m$HASH\033[0m"
+echo -e "\033[0;32mDataset anchored to ledger.\033[0m HASH=\033[1;33m$HASH\033[0m"
+

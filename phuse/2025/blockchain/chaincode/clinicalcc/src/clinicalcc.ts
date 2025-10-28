@@ -1,93 +1,98 @@
 import { Context, Contract } from 'fabric-contract-api';
 
-interface Consent {
-  subjectId: string;
-  version: string;
-  status: 'active' | 'withdrawn';
-  timestamp: string; // ISO8601
-  payloadHash: string; // SHA-256 of JSON payload
-}
-
 interface DatasetAnchor {
-  domain: string;       // e.g., DM
+  domain: string;       // e.g., DM, AE, LB
   version: string;      // e.g., 1.0
   fileName: string;     // e.g., DM.csv
   sha256: string;       // file hash
   createdAt: string;    // ISO8601
+  creator: string;      // who anchored it (Sponsor/CRO)
+}
+
+interface AnalysisLineage {
+  analysisId: string;      // unique analysis run identifier
+  inputDatasets: string[]; // array of dataset anchor keys
+  programHash: string;     // hash of statistical program
+  outputHash: string;      // hash of output dataset
+  merkleRoot: string;      // Merkle root of entire bundle
+  timestamp: string;       // ISO8601
+  analyst: string;         // who ran the analysis
 }
 
 export class ClinicalCC extends Contract {
 
-  async RegisterConsent(ctx: Context, key: string, consentJson: string, payloadHash: string) {
-    const consent = JSON.parse(consentJson) as Consent;
-    if (!consent.subjectId || !consent.version || !consent.status) {
-      throw new Error('Invalid consent object');
-    }
-    
-    // Check if consent with this exact key exists
-    const exists = await this._exists(ctx, `CONSENT_${key}`);
-    if (exists) {
-      // Allow re-registration only if previous consent was withdrawn
-      const existingBytes = await ctx.stub.getState(`CONSENT_${key}`);
-      const existingConsent = JSON.parse(existingBytes.toString()) as Consent;
-      if (existingConsent.status === 'active') {
-        throw new Error(`Active consent already exists for key ${key}. Use UpdateConsent to modify.`);
-      }
-      // Allow overwriting withdrawn consent (re-consent scenario)
-    }
-    
-    await ctx.stub.putState(`CONSENT_${key}`, Buffer.from(JSON.stringify(consent)));
-    // Update index to point to latest consent version
-    await ctx.stub.putState(`CONSENT_SUBJ_${consent.subjectId}`, Buffer.from(key));
-    return { ok: true, key, payloadHash };
-  }
-
-  async UpdateConsent(ctx: Context, key: string, consentJson: string, payloadHash: string) {
-    const exists = await this._exists(ctx, `CONSENT_${key}`);
-    if (!exists) throw new Error(`Missing consent record ${key}`);
-    const consent = JSON.parse(consentJson) as Consent;
-    await ctx.stub.putState(`CONSENT_${key}`, Buffer.from(JSON.stringify(consent)));
-    return { ok: true, key, payloadHash };
-  }
-
   async AnchorDataset(ctx: Context, anchorKey: string, anchorJson: string) {
-    // policy: require active consent before anchoring
     const anchor = JSON.parse(anchorJson) as DatasetAnchor;
     
-    // Check if consent exists for the subject
-    const subjKeyBytes = await ctx.stub.getState(`CONSENT_SUBJ_SUBJ-001`); // demo: single subject
-    if (!subjKeyBytes || !subjKeyBytes.length) {
-      throw new Error('No consent found for subject; anchoring rejected by policy');
+    // Validate required fields
+    if (!anchor.domain || !anchor.sha256 || !anchor.fileName) {
+      throw new Error('Invalid dataset anchor: missing required fields');
     }
     
-    // Get consent record
-    const consentKey = subjKeyBytes.toString();
-    const consentBytes = await ctx.stub.getState(`CONSENT_${consentKey}`);
-    if (!consentBytes || !consentBytes.length) {
-      throw new Error('Consent record not found; anchoring rejected by policy');
+    // Check if anchor already exists
+    const exists = await this._exists(ctx, `ANCHOR_${anchorKey}`);
+    if (exists) {
+      throw new Error(`Dataset anchor already exists for key ${anchorKey}`);
     }
     
-    // Verify consent is active
-    const consent = JSON.parse(consentBytes.toString()) as Consent;
-    if (consent.status !== 'active') {
-      throw new Error(`Consent status is '${consent.status}'; anchoring rejected by policy (requires 'active')`);
-    }
-    
-    // All checks passed - anchor the dataset
+    // Store the anchor
     await ctx.stub.putState(`ANCHOR_${anchorKey}`, Buffer.from(JSON.stringify(anchor)));
-    return { ok: true, anchorKey };
+    
+    // Create index by domain for easy lookup
+    await ctx.stub.putState(`DOMAIN_${anchor.domain}`, Buffer.from(anchorKey));
+    
+    return { ok: true, anchorKey, sha256: anchor.sha256 };
   }
 
-  async GetConsent(ctx: Context, key: string) {
-    const v = await ctx.stub.getState(`CONSENT_${key}`);
-    if (!v || !v.length) throw new Error(`No consent ${key}`);
-    return v.toString();
+  async RecordLineage(ctx: Context, lineageJson: string) {
+    const lineage = JSON.parse(lineageJson) as AnalysisLineage;
+    
+    // Validate required fields
+    if (!lineage.analysisId || !lineage.merkleRoot || !lineage.programHash) {
+      throw new Error('Invalid lineage record: missing required fields');
+    }
+    
+    // Verify that input datasets exist
+    for (const inputKey of lineage.inputDatasets) {
+      const exists = await this._exists(ctx, `ANCHOR_${inputKey}`);
+      if (!exists) {
+        throw new Error(`Input dataset not found: ${inputKey}`);
+      }
+    }
+    
+    // Store lineage record
+    await ctx.stub.putState(`LINEAGE_${lineage.analysisId}`, Buffer.from(JSON.stringify(lineage)));
+    
+    return { ok: true, analysisId: lineage.analysisId, merkleRoot: lineage.merkleRoot };
   }
 
   async GetAnchor(ctx: Context, anchorKey: string) {
     const v = await ctx.stub.getState(`ANCHOR_${anchorKey}`);
     if (!v || !v.length) throw new Error(`No anchor ${anchorKey}`);
     return v.toString();
+  }
+
+  async GetLineage(ctx: Context, analysisId: string) {
+    const v = await ctx.stub.getState(`LINEAGE_${analysisId}`);
+    if (!v || !v.length) throw new Error(`No lineage record for ${analysisId}`);
+    return v.toString();
+  }
+
+  async VerifyHash(ctx: Context, anchorKey: string, providedHash: string) {
+    const anchorBytes = await ctx.stub.getState(`ANCHOR_${anchorKey}`);
+    if (!anchorBytes || !anchorBytes.length) {
+      return { verified: false, message: `Anchor ${anchorKey} not found` };
+    }
+    
+    const anchor = JSON.parse(anchorBytes.toString()) as DatasetAnchor;
+    const verified = anchor.sha256 === providedHash;
+    
+    return {
+      verified,
+      onChainHash: anchor.sha256,
+      providedHash,
+      message: verified ? 'Hash verified - data integrity confirmed' : 'Hash mismatch - tampering detected'
+    };
   }
 
   private async _exists(ctx: Context, key: string) {

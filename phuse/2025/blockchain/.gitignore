@@ -42,3 +42,7 @@ env/
 *.tmp
 .temp/
 
+# Python virtual environment
+.venv/
+__pycache__/
+

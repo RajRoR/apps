@@ -1,24 +1,29 @@
-# Clinical Trial Blockchain POC
+# Blockchain-Inspired Statistical Computing Environment (SCE)
 
-A proof-of-concept demonstrating blockchain technology for clinical trial data integrity and consent management, presented at PHUSE EU 2025.
+A proof-of-concept demonstrating blockchain-inspired integrity principles for statistical computing in clinical trials, presented at PHUSE EU 2025.
+
+**Paper:** DH03 - Blockchain for Secure and Transparent Clinical Trials
 
 ## Overview
 
-This POC demonstrates how blockchain can address critical challenges in clinical trials:
-- **Immutable audit trails** for regulatory compliance
-- **Data integrity verification** using cryptographic hashes
-- **Consent management** with policy enforcement
-- **Multi-party trust** between Sponsor, CRO, and Regulators
+This POC demonstrates how blockchain principles (immutability, cryptographic hashing, append-only records) can strengthen data integrity and audit trails in statistical computing environments **without requiring distributed consensus networks**.
+
+### Key Concepts Demonstrated:
+
+- **Content Addressing**: Every dataset identified by its cryptographic hash (SHA-256)
+- **Immutable Anchoring**: Dataset fingerprints recorded on append-only ledger
+- **Lineage Tracking**: Analysis runs linked to specific input/code/output versions
+- **Merkle Trees**: Bundle-level verification with single root hash
+- **Tamper Evidence**: Any modification immediately detectable through hash mismatch
 
 ## Architecture
 
 ### Network Participants
-- **Sponsor (Org1)**: Pharmaceutical company managing the trial
-- **CRO (Org2)**: Contract Research Organization collecting data
-- **Regulator**: Read-only observer verifying data integrity
+- **Statistical Computing Team (Org1)**: Anchors datasets, records analysis lineage
+- **QC/Audit Team (Org2)**: Verifies data integrity and lineage completeness
 
 ### Channel
-- `clinicaltrial` - Private channel for trial data anchoring
+- `clinicaltrial` - Shared ledger for immutable audit records
 
 ## Prerequisites
 
@@ -31,7 +36,7 @@ This POC demonstrates how blockchain can address critical challenges in clinical
 
 ### 1. Clone Hyperledger Fabric Samples
 
-   ```bash
+```bash
 # Download and install Fabric samples, binaries, and Docker images
 curl -sSL https://raw.githubusercontent.com/hyperledger/fabric/main/scripts/install-fabric.sh | bash -s -- 2.5.4 1.5.7
 mv fabric-samples ./
@@ -64,7 +69,7 @@ cd ../..
 
 **What it does:**
 - Starts Certificate Authorities (CAs)
-- Launches peer nodes for Sponsor and CRO
+- Launches peer nodes for Statistical and QC teams
 - Creates the `clinicaltrial` channel
 
 ### Step 2: Deploy Chaincode
@@ -78,152 +83,164 @@ cd ../..
 - Installs on both organizations' peers
 - Commits chaincode definition to the channel
 
-### Step 3: Register Informed Consent
+### Step 3: Anchor DM Dataset
 
 ```bash
-./scripts/03_register_consent.sh
+./scripts/03_anchor_dataset.sh
 ```
 
 **What it does:**
-- Computes SHA-256 hash of consent document
-- Sponsor registers consent on blockchain
-- Creates immutable consent record
+- Computes SHA-256 hash of Demographics (DM) dataset
+- Anchors hash on blockchain with metadata (domain, version, timestamp, creator)
+- Creates immutable proof that dataset existed in this exact state
 
-**Key concept:** No data can be anchored without active consent!
+**Key concept:** Content addressing - the hash IS the dataset's identity.
 
-### Step 4: Anchor SDTM Dataset
+### Step 4: Anchor AE Dataset
 
 ```bash
 ./scripts/04_anchor_sdtm.sh
 ```
 
 **What it does:**
-- CRO computes hash of Demographics (DM) dataset
-- Anchors hash on blockchain with metadata
-- Smart contract validates active consent exists
+- Anchors Adverse Events (AE) dataset
+- Demonstrates multiple dataset anchoring (building blocks for Merkle tree)
 
-**Important:** Only the hash is stored on-chain, not the actual data (privacy preservation).
+### Step 5: Record Analysis Lineage
 
-### Step 5: Verify Data Integrity
+```bash
+./scripts/04_record_lineage.sh
+```
+
+**What it does:**
+- Records an analysis run linking:
+  - Input dataset (DM.csv) → identified by hash
+  - Statistical program (analysis_program.sas) → hash of code
+  - Output results (analysis_output.csv) → hash of outputs
+- Computes Merkle root covering entire analysis bundle
+- Creates cryptographic proof of reproducibility
+
+**Important:** This demonstrates how every analysis becomes verifiable and traceable.
+
+### Step 6: Verify Dataset Integrity
 
 ```bash
 ./scripts/05_verify_hash.sh
 ```
 
 **What it does:**
-- Regulator queries on-chain hash
-- Recomputes hash from received DM.csv
+- Auditor queries on-chain hash for DM dataset
+- Recomputes hash from local DM.csv
 - Compares hashes to verify data integrity
 
 **Success case:** Hashes match → Data is authentic and unmodified
 
-**Failure case:** Edit DM.csv (change any value), rerun script → Verification fails!
+**Failure case:** Edit DM.csv (change any value), rerun script → Verification fails with red error!
 
-### Step 6: Withdraw Consent
+### Step 7: Verify Analysis Lineage
 
 ```bash
-./scripts/06_withdraw_consent.sh
+./scripts/06_verify_lineage.sh
 ```
 
 **What it does:**
-- Updates consent status to "withdrawn"
-- Blockchain enforces policy: no new data can be anchored
-- Demonstrates GDPR "right to be forgotten" compliance
+- Retrieves complete lineage record for an analysis run
+- Shows Merkle root linking inputs, code, and outputs
+- Demonstrates cryptographic traceability of analytical results
 
 ## Project Structure
 
 ```
 blockchain/
 ├── chaincode/clinicalcc/          # Smart contract (TypeScript)
-│   ├── src/clinicalcc.ts          # Contract logic
+│   ├── src/clinicalcc.ts          # Lineage & anchoring logic
 │   ├── package.json               # Dependencies
 │   └── tsconfig.json              # TypeScript config
 ├── scripts/                       # Automation scripts
-│   ├── 01_up_network.sh           # Network startup
-│   ├── 02_deploy_chaincode.sh     # Chaincode deployment
-│   ├── 03_register_consent.sh     # Consent registration
-│   ├── 04_anchor_sdtm.sh          # Data anchoring
-│   ├── 05_verify_hash.sh          # Hash verification
-│   ├── 06_withdraw_consent.sh     # Consent withdrawal
-│   ├── hash_sdtm.py               # Hash computation utility
-│   └── test_hash_performance.sh   # Performance benchmarking
+│   ├── 01_up_network.sh          # Network startup
+│   ├── 02_deploy_chaincode.sh    # Chaincode deployment
+│   ├── 03_anchor_dataset.sh      # Anchor DM dataset
+│   ├── 04_anchor_sdtm.sh         # Anchor AE dataset
+│   ├── 04_record_lineage.sh      # Record analysis lineage
+│   ├── 05_verify_hash.sh         # Hash verification
+│   ├── 06_verify_lineage.sh      # Lineage verification
+│   └── hash_sdtm.py              # Hash computation utility
 ├── data/                          # Sample data
-│   ├── DM.csv                     # Demographics SDTM dataset
-│   ├── consent_SUBJ001_v2.json    # Active consent
-│   └── consent_withdrawn_SUBJ001_v2.json
-├── diagrams/                      # Interactive diagrams (HTML/SVG)
-│   ├── architecture-diagram.html           # 4-layer architecture (color)
-│   ├── architecture-diagram-bw.html        # 4-layer architecture (B&W)
-│   ├── consent-management-diagram.html     # Consent governance (color)
-│   ├── consent-management-diagram-bw.html  # Consent governance (B&W)
-│   ├── sdtm-integration-diagram.html       # SDTM anchoring (color)
-│   ├── sdtm-integration-diagram-bw.html    # SDTM anchoring (B&W)
-│   ├── reference-implementation-diagram.html    # Network deployment (color)
-│   ├── reference-implementation-diagram-bw.html # Network deployment (B&W)
-│   ├── performance-graphs.html             # Performance analysis (color)
-│   └── performance-graphs-bw.html          # Performance analysis (B&W)
+│   ├── DM.csv                     # Demographics dataset
+│   ├── AE.csv                     # Adverse Events dataset
+│   ├── analysis_program.sas       # Statistical program
+│   └── analysis_output.csv        # Analysis results
 └── README.md
 ```
 
 ## Smart Contract Functions
 
-### `RegisterConsent(key, consentJson, payloadHash)`
-Register new informed consent on blockchain.
-- **Caller:** Sponsor
-- **Validation:** Ensures consent doesn't already exist
-
-### `UpdateConsent(key, consentJson, payloadHash)`
-Update existing consent (e.g., withdrawal).
-- **Caller:** Sponsor
-- **Validation:** Consent must exist
-
 ### `AnchorDataset(anchorKey, anchorJson)`
-Anchor SDTM dataset hash on blockchain.
-- **Caller:** CRO
-- **Policy:** Requires active consent, otherwise rejected
+Anchor a dataset hash on the ledger.
+- **Caller:** Statistical Computing Team
+- **Validation:** Checks for duplicate anchors
+- **Creates:** Immutable dataset fingerprint
 
-### `GetConsent(key)`
-Query consent record.
-- **Caller:** Any participant
-- **Returns:** Full consent JSON
+### `RecordLineage(lineageJson)`
+Record complete analysis lineage with Merkle root.
+- **Caller:** Statistical Computing Team
+- **Validation:** Verifies all input datasets exist
+- **Creates:** Cryptographic proof of reproducibility
 
 ### `GetAnchor(anchorKey)`
-Query anchored dataset metadata.
-- **Caller:** Any participant (including Regulator)
-- **Returns:** Domain, version, hash, timestamp
+Query dataset anchor record.
+- **Caller:** Any participant (Auditors, QC)
+- **Returns:** Domain, version, hash, timestamp, creator
+
+### `GetLineage(analysisId)`
+Query analysis lineage record.
+- **Caller:** Any participant
+- **Returns:** Full lineage with inputs, program, outputs, Merkle root
+
+### `VerifyHash(anchorKey, providedHash)`
+Verify a dataset hash against on-chain record.
+- **Caller:** Any participant
+- **Returns:** Verification result with comparison
 
 ## Key Concepts Demonstrated
 
-### 1. **Data Integrity (Tamper Evidence)**
-- Cryptographic hashes (SHA-256) provide fingerprint of datasets
-- Any modification changes the hash → tampering detected
-- Immutable blockchain provides trusted timestamp
-
-### 2. **Smart Contract Policy Enforcement**
-```typescript
-if (consent.status !== 'active') {
-  throw new Error('Consent not active; anchoring rejected by policy');
-}
+### 1. **Content Addressing (Hash-Based Identity)**
 ```
-Business rules enforced by code, not manual processes.
+Dataset identity = SHA-256(file_content)
+```
+- Same content → Same hash (deterministic)
+- Different content → Different hash (tamper evident)
+- Hash becomes immutable version identifier
 
-### 3. **Privacy Preservation**
-- Only hashes stored on-chain, not raw data
-- Complies with HIPAA/GDPR
-- Full datasets transmitted off-chain via traditional channels
+### 2. **Immutable Audit Trail**
+```typescript
+// Append-only ledger - no deletions, no modifications
+await ctx.stub.putState(`ANCHOR_${key}`, data);
+```
+Every dataset anchor is permanent - audit history cannot be altered.
 
-### 4. **Multi-Party Trust**
-- No single party controls the ledger
-- Cryptographic consensus ensures data integrity
-- Regulators gain independent verification capability
+### 3. **Cryptographic Lineage**
+```
+Input Hash + Program Hash + Output Hash → Merkle Root
+```
+Single root hash proves entire analysis bundle integrity.
 
-## Use Cases for Clinical Trials
+### 4. **Reproducibility Verification**
+```
+Re-run analysis → Compare new Merkle root with recorded root
+Match → Reproducible
+Mismatch → Non-reproducible (investigate!)
+```
 
-1. **Regulatory Audits:** Immutable audit trail for 21 CFR Part 11 compliance
-2. **Data Provenance:** Prove when data was collected and by whom
-3. **Consent Management:** Blockchain-enforced consent policies
-4. **Protocol Deviations:** Timestamped, tamper-proof deviation records
-5. **Data Transfers:** Verify data integrity during sponsor-to-regulator submissions
+## Blockchain-Inspired Principles in SCE
+
+| Blockchain Principle | What It Ensures | SCE Implementation | Benefit |
+|---------------------|-----------------|-------------------|---------|
+| **Append-only ledger** | Prevents silent overwrites | Immutable anchor records | Verifiable "who anchored what and when" |
+| **Cryptographic hashes** | Detect tampering | SHA-256 for all artifacts | Immutable version identity |
+| **Merkle tree** | Verifies complete bundle | Analysis-level root hash | One-click bundle validation |
+| **Smart contracts** | Automate rules | Lineage validation checks | Built-in compliance |
+| **Distributed consensus** | Shared trust | Multi-tenant SCE governance | Internal transparency |
 
 ## Testing Tampering Detection
 
@@ -236,72 +253,28 @@ Business rules enforced by code, not manual processes.
 
 This demonstrates how even minor tampering is immediately detectable!
 
-## Interactive Diagrams
+## Use Cases for Statistical Computing
 
-The `diagrams/` folder contains publication-ready interactive HTML diagrams for papers and presentations.
+1. **Regulatory Submissions:** Immutable proof of data provenance for FDA/EMA
+2. **Reproducibility:** Cryptographic verification of exact analytical environment
+3. **Audit Trails:** Complete lineage from raw data → programs → outputs
+4. **Version Control:** Content-based versioning prevents silent overwrites
+5. **QC Reviews:** Auditors verify analysis integrity without re-running programs
 
-### Available Diagrams
+## Performance Benchmarks
 
-1. **Architecture Diagram** - Four-layer blockchain system architecture
-   - `architecture-diagram.html` - Color version (presentations)
-   - `architecture-diagram-bw.html` - B&W version (academic papers)
+SHA-256 hash computation performance:
 
-2. **Consent Management** - Patient-centric governance and consent lifecycle
-   - `consent-management-diagram.html` - Color version
-   - `consent-management-diagram-bw.html` - B&W version
+| Dataset Size | Hash Time | Throughput |
+|--------------|-----------|------------|
+| 1 MB         | ~25 ms    | 40 MB/s    |
+| 10 MB        | ~270 ms   | 37 MB/s    |
+| 50 MB        | ~950 ms   | 52 MB/s    |
+| 500 MB       | ~3.6 sec  | 185 MB/s   |
 
-3. **SDTM Integration** - Dataset anchoring with Merkle trees
-   - `sdtm-integration-diagram.html` - Color version
-   - `sdtm-integration-diagram-bw.html` - B&W version
+**Conclusion:** Hash computation is negligible compared to statistical analysis runtime.
 
-4. **Reference Implementation** - Complete network deployment
-   - `reference-implementation-diagram.html` - Color version
-   - `reference-implementation-diagram-bw.html` - B&W version
-
-5. **Performance Analysis** - Blockchain verification scalability
-   - `performance-graphs.html` - Color version with interactive charts
-   - `performance-graphs-bw.html` - B&W version with formal captions
-
-### How to Use Diagrams
-
-**For Presentations:**
-```bash
-# Open colored versions in browser
-open diagrams/architecture-diagram.html
-open diagrams/consent-management-diagram.html
-open diagrams/performance-graphs.html
-```
-
-**For Academic Papers:**
-```bash
-# Open B&W versions (grayscale optimized)
-open diagrams/architecture-diagram-bw.html
-open diagrams/consent-management-diagram-bw.html
-open diagrams/performance-graphs-bw.html
-```
-
-**Export Options:**
-- Click "📥 Export PDF" to save as PDF
-- Click "📊 Export SVG" to save as scalable vector graphics
-- Press `Ctrl/Cmd + P` to print or save as PDF
-- Use "🎨 Switch to Color" or "⚫ Switch to B&W" buttons to toggle versions
-
-**For LaTeX Papers:**
-Export SVG or high-resolution PNG and include in your document:
-```latex
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{diagrams/figure-1.pdf}
-\caption{Four-layer blockchain architecture for clinical trials.}
-\label{fig:architecture}
-\end{figure}
-```
-
-All diagrams are optimized for:
-- ✅ IEEE/ACM conference papers (2-column format)
-- ✅ PowerPoint/Keynote slides (16:9 aspect ratio)
-- ✅ Poster presentations (high-resolution export)
-- ✅ Technical documentation (SVG scalability)
+Run `./scripts/test_hash_performance.sh` to benchmark on your system.
 
 ## Cleanup
 
@@ -316,41 +289,56 @@ cd ../..
 ## Technical Details
 
 ### Hash Algorithm
-- **SHA-256**: Cryptographically secure, collision-resistant
-- **Canonicalization**: JSON sorted and minified before hashing for consistency
+- **SHA-256**: Cryptographically secure, 256-bit output
+- **Deterministic**: Same input always produces same hash
+- **Avalanche effect**: Single bit change completely changes hash
 
-### Consensus
-- Hyperledger Fabric's ordering service ensures all parties agree on transaction order
-- Smart contract endorsement policy requires approval from both Sponsor and CRO
+### Merkle Tree Construction
+```
+Merkle Root = hash(
+  hash(Input Datasets) + 
+  hash(Program Code) + 
+  hash(Outputs)
+)
+```
 
-### Storage
-- **On-chain:** Hashes, metadata, consent status (kilobytes)
-- **Off-chain:** Full datasets, images, source documents (megabytes/gigabytes)
+### Storage Architecture
+- **On-chain:** Hashes, metadata, lineage records (kilobytes)
+- **Off-chain:** Full datasets, programs, outputs (megabytes/gigabytes)
+
+## Alignment with Regulatory Requirements
+
+This POC addresses:
+
+- ✅ **21 CFR Part 11**: Electronic records and signatures with audit trails
+- ✅ **ALCOA+**: Attributable, Legible, Contemporaneous, Original, Accurate, Complete, Consistent, Enduring, Available
+- ✅ **ICH E6(R3)**: Data integrity and quality management
+- ✅ **Computer Software Assurance (CSA)**: Risk-based validation and control
 
 ## Future Enhancements
 
-- Multi-subject consent management
-- Multiple SDTM domains (AE, LB, VS, etc.)
-- Integration with EDC systems (Medidata Rave, Oracle Clinical One)
-- Smart contract access control (role-based permissions)
-- Query by subject ID, study site, date range
+- Multiple SDTM domains (VS, LB, EG) with Merkle tree aggregation
+- Program version control integration (Git hash linking)
+- Environment fingerprinting (container digests, package versions)
+- Cross-system lineage (EDC → SDTM → Analysis → TLFs)
+- Inspector dashboard for visual lineage graphs
 
 ## References
 
 - [Hyperledger Fabric Documentation](https://hyperledger-fabric.readthedocs.io/)
 - [CDISC SDTM Standards](https://www.cdisc.org/standards/foundational/sdtm)
 - [FDA 21 CFR Part 11](https://www.fda.gov/regulatory-information/search-fda-guidance-documents/part-11-electronic-records-electronic-signatures-scope-and-application)
-- [PHUSE EU 2025](https://www.phuse.eu/)
-
-## License
-
-This is a proof-of-concept for educational and demonstration purposes.
+- [ICH E6(R3) GCP Guidelines](https://www.ich.org/)
 
 ## Contact
 
-Presented at PHUSE EU 2025 - Blockchain for Clinical Trials Technical Paper
+**Author:** Raj Kumar  
+**Company:** Sycamore Informatics Inc.  
+**Email:** raj.kumar@sycamoreinformatics.com  
+**Website:** https://sycamoreinformatics.com/
+
+Presented at PHUSE EU 2025
 
 ---
 
-**Note:** This POC uses Hyperledger Fabric's test network for demonstration. Production deployments would require proper infrastructure, security hardening, and compliance validation.
-
+**Note:** This POC uses Hyperledger Fabric's test network for demonstration. The same integrity principles can be implemented within a single-organization SCE using simpler append-only databases, without distributed blockchain infrastructure.
