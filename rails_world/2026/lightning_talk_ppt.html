@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Active Record Queries Are Too Clean</title>
+
+  <!-- Reveal.js Base & Theme Styles -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/theme/black.min.css">
+  <!-- Code Syntax Highlighting Theme -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
+
+  <style>
+      :root {
+          --r-background-color: #0d1117;
+          --r-main-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          --r-heading-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          --r-heading-text-transform: none;
+          --accent-red: #ff5555;
+          --accent-green: #50fa7b;
+          --accent-blue: #8be9fd;
+          --accent-yellow: #f1fa8c;
+      }
+
+      /* Screen Real Estate Optimization for Big Conference Rooms */
+      .reveal {
+          font-size: 38px;
+      }
+
+      /* Force Perfect Vertical & Horizontal Flex Alignment for All Slides */
+      .reveal .slides > section {
+          display: flex !important;
+          flex-direction: column !important;
+          justify-content: center !important;
+          align-items: center !important;
+          height: 100% !important;
+          padding: 0 !important;
+          box-sizing: border-box !important;
+      }
+
+      /* Headings & Typography */
+      .reveal h1, .reveal h2, .reveal h3 {
+          font-weight: 900;
+          letter-spacing: -0.02em;
+          margin: 0 0 0.4em 0;
+      }
+
+      .reveal h1 { font-size: 2.8em; }
+      .reveal h2 { font-size: 2.1em; }
+      .reveal h3 { font-size: 1.6em; }
+
+      .highlight-red { color: var(--accent-red); }
+      .highlight-green { color: var(--accent-green); }
+      .highlight-blue { color: var(--accent-blue); }
+      .highlight-yellow { color: var(--accent-yellow); }
+
+      /* Code Blocks - Maximized Width */
+      .reveal pre {
+          width: 100%;
+          box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+          border-radius: 12px;
+          font-size: 0.72em;
+          margin: 0.8em 0;
+      }
+
+      .reveal pre code {
+          padding: 1.4em;
+          max-height: 600px;
+          line-height: 1.4;
+      }
+
+      /* Grid Layouts to Fill Widescreen Space */
+      .grid-2 {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 2rem;
+          text-align: left;
+          width: 100%;
+          align-items: center;
+      }
+
+      .grid-3 {
+          display: grid;
+          grid-template-columns: 1fr 1fr 1fr;
+          gap: 1.5rem;
+          text-align: left;
+          width: 100%;
+          align-items: stretch;
+      }
+
+      /* Large High-Contrast Cards */
+      .card {
+          background: #161b22;
+          border: 2px solid #30363d;
+          border-radius: 16px;
+          padding: 2rem;
+          box-sizing: border-box;
+          width: 100%;
+      }
+
+      .card-bad {
+          border-left: 10px solid var(--accent-red);
+      }
+
+      .card-good {
+          border-left: 10px solid var(--accent-green);
+      }
+
+      .big-stat {
+          font-size: 3.5em;
+          font-weight: 900;
+          line-height: 1;
+          margin: 0.1em 0;
+      }
+
+      /* CUSTOM STYLES FOR SLIDE 6 (THE 3 COMMANDMENTS) */
+      .commandment-card {
+          background: #161b22;
+          border: 2px solid #30363d;
+          border-radius: 18px;
+          padding: 2rem 1.8rem;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          position: relative;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      }
+
+      .badge-number {
+          font-size: 0.8em;
+          font-weight: 900;
+          padding: 0.2em 0.7em;
+          border-radius: 50px;
+          display: inline-block;
+          margin-bottom: 0.8em;
+          letter-spacing: 0.05em;
+      }
+
+      .badge-green { background: rgba(80, 250, 123, 0.15); color: var(--accent-green); border: 1px solid var(--accent-green); }
+      .badge-yellow { background: rgba(241, 250, 140, 0.15); color: var(--accent-yellow); border: 1px solid var(--accent-yellow); }
+      .badge-red { background: rgba(255, 85, 85, 0.15); color: var(--accent-red); border: 1px solid var(--accent-red); }
+
+      .do-dont-box {
+          margin-top: 1em;
+          background: #0d1117;
+          border-radius: 10px;
+          padding: 0.8em 1em;
+          font-size: 0.85em;
+          line-height: 1.6;
+      }
+  </style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 1: Title -->
+    <section>
+      <h1>Your Active Record Queries Are <br /><span class="highlight-red">Too Clean</span></h1>
+      <p class="highlight-blue" style="font-size: 1.5em; font-weight: 600; margin-top: 0.5em;">❤️ A love letter to the fat model 🥰</p>
+
+      <div style="margin-top: 2.5em; display: inline-block; background: #161b22; border: 1px solid #30363d; padding: 0.6em 1.5em; border-radius: 50px;">
+        <p style="font-size: 0.9em; margin: 0; opacity: 0.9;">
+          <strong>Raj Kumar</strong> &bull; Rails World 2026
+        </p>
+      </div>
+
+      <aside class="notes">
+        <p><strong>⏱️ (0:00 - 0:20) Introduction & Icebreaker</strong></p>
+
+        <p>Quick show of hands — who here has an <code>app/services</code> folder with more than 50 files in it? [Pause 1.5 seconds]</p>
+
+        <p><strong>[If many hands]:</strong> Look around the room—we are in <strong>good company</strong>! [Smile]</p>
+
+        <p><strong>[If few/no hands]:</strong> You are far more <strong>disciplined</strong> than my team! [Smile]</p>
+
+        <p>Either way, we built those abstractions with the <strong>best intentions</strong>, following every clean code guideline in the book.</p>
+
+        <p>In the next few minutes, I hope to convince you to give a few of those service files a <strong>well-deserved retirement</strong>.</p>
+      </aside>
+    </section>
+
+    <!-- SLIDE 2: The Heresy -->
+    <section>
+      <h2>Clean Code Made Your App <span class="highlight-red">Slow</span></h2>
+
+      <div class="grid-2" style="margin-top: 1.5em;">
+        <div class="card card-good">
+          <h3 class="highlight-yellow">Postgres Engine</h3>
+          <p style="font-size: 1.1em; line-height: 1.5; margin-top: 0.5em;">
+            Spent <strong>30 years</strong> becoming a high-performance genius at set operations and query planning.
+          </p>
+        </div>
+
+        <div class="card card-bad">
+          <h3 class="highlight-red">Ruby Abstraction</h3>
+          <p style="font-size: 1.1em; line-height: 1.5; margin-top: 0.5em;">
+            We hired a database genius, then handed it work <strong>one row at a time</strong> through five layers of POROs.
+          </p>
+        </div>
+      </div>
+
+      <aside class="notes">
+        <p><strong>⏱️ (0:20 - 1:00) The Problem Statement</strong></p>
+
+        <p>We were told: <strong>skinny models, fat services</strong>. Single Responsibility. One class, one reason to change. We Rubocop'd our souls clean.</p>
+
+        <p>And somewhere in that religion, we forgot one key reality: <strong>the database does not care about your object graph</strong>.</p>
+
+        <p>PostgreSQL has spent <strong>30 years</strong> becoming an absolute genius at <strong>set operations</strong>.</p>
+
+        <p>And we hired this engine—then handed it work <strong>one row at a time</strong>, through five layers of PORO abstractions.</p>
+      </aside>
+    </section>
+
+    <!-- SLIDE 3: The Crime Scene -->
+    <section>
+      <h2>The "Clean" Crime Scene</h2>
+      <pre><code class="language-ruby" data-trim data-noescape data-line-numbers="1-10|12-13">
+# SOLID, code-review-approved, architecture-monk approved
+class OrderTotalCalculator
+  def initialize(order) = @order = order
+  def call = @order.line_items.sum { |li| LineItemPricer.new(li).price }
+end
+
+class LineItemPricer
+  def initialize(li) = @li = li
+  def price = @li.quantity * @li.product.current_price
+end
+
+# In a controller, looking completely innocent:
+orders.map { |o| OrderTotalCalculator.new(o).call }
+      </code></pre>
+
+      <div class="card card-bad" style="margin-top: 2.5em; padding: 1.2rem 2rem;">
+        <p class="highlight-red" style="font-size: 0.95em; font-weight: 700; margin: 0; text-align: center;">
+          N+1 query explosion across 3 object boundaries. <br /> Bullet can't warn you; <i>.includes()</i> has nowhere to attach.
+        </p>
+      </div>
+
+      <aside class="notes">
+        <p><strong>⏱️ (1:00 - 2:15) Code Breakdown</strong></p>
+
+        <p>This code easily passes code review. Every object has a <strong>single job</strong>. It's clean, SOLID-approved architecture.</p>
+
+        <p><strong>[Click to highlight line 13]:</strong> But in production? It fires—count with me—a query for line items, then a query per line item for products.</p>
+
+        <p>On just 200 orders, that is over <strong>400 SQL round trips</strong>.</p>
+
+        <p>Each query is wrapped so deeply in POROs that the <strong>Bullet gem can't even warn you</strong>, and <code>.includes()</code> has nowhere to attach.</p>
+
+        <p>We didn't eliminate the N+1 query... we gave it a <strong>service object and a permanent address</strong>!</p>
+      </aside>
+    </section>
+
+    <!-- SLIDE 4: The "Dirty" Version -->
+    <section>
+      <h2>The "Dirty" Solution</h2>
+
+      <div style="width: 100%;">
+        <pre><code class="language-ruby" data-trim data-noescape data-line-numbers="1-7|9-10">
+class Order &lt; ApplicationRecord
+  scope :with_totals, -&gt; {
+    joins(line_items: :product)
+      .group(:id)
+      .select("orders.*, SUM(line_items.quantity * products.current_price) AS total")
+  }
+end
+
+# Usage:
+Order.with_totals # 1 Query. 0 Ruby allocations.
+        </code></pre>
+
+        <div class="grid-2" style="margin-top: 1em;">
+          <div class="card card-bad" style="padding: 1rem 1.5rem; text-align: center;">
+            <p style="margin:0; font-size: 0.85em; font-weight: 600;">Service Objects (Ruby PORO Loop)</p>
+            <p class="highlight-red big-stat">3,200 ms</p>
+          </div>
+          <div class="card card-good" style="padding: 1rem 1.5rem; text-align: center;">
+            <p style="margin:0; font-size: 0.85em; font-weight: 600;">Active Record Scope (Postgres C Engine)</p>
+            <p class="highlight-green big-stat">12 ms</p>
+          </div>
+        </div>
+      </div>
+
+      <aside class="notes">
+        <p><strong>⏱️ (2:15 - 3:30) The Active Record Solution</strong></p>
+
+        <p>Here is the fix: <strong>Exactly 1 query</strong>. The set math happens directly inside PostgreSQL in compiled C code, on data that never leaves database memory.</p>
+
+        <p>[Click to next highlight]:</p>
+        <p>Look at those benchmark numbers: <strong>3,200 milliseconds down to 12 milliseconds</strong>.</p>
+
+        <p>Yes—the logic lives on the model. Yes—it's raw SQL inside a scope. Your team's architecture monk might object.</p>
+
+        <p>But it runs <strong>250 times faster</strong>, and the query intent is unified in a single place.</p>
+
+        <p>This "dirty" version isn't dirty at all—it's just <strong>honest about where execution happens</strong>.</p>
+      </aside>
+    </section>
+
+    <!-- SLIDE 5: The Reframe -->
+    <section>
+      <h2>Abstraction moved work to the <span class="highlight-red">wrong machine</span>.</h2>
+
+      <div class="grid-2" style="margin-top: 1.5em;">
+        <div class="card card-bad">
+          <h3 class="highlight-red">The Abstraction Wall</h3>
+          <p style="font-size: 1em; line-height: 1.6;">
+            Every abstraction boundary in Ruby is a wall the query planner can't see through.
+          </p>
+          <p style="font-size: 1em; line-height: 1.6; margin-top: 1em;">
+            Break queries into isolated POROs and you amputate <code class="highlight-blue">includes</code>, CTEs, and window functions.
+          </p>
+        </div>
+
+        <div class="card card-good">
+          <h3 class="highlight-green">Where Optimization Belongs</h3>
+          <p style="font-size: 1em; line-height: 1.6;">
+            Clean architecture optimized for the <strong class="highlight-green">reader of the class</strong>.
+          </p>
+          <p style="font-size: 1em; line-height: 1.6; margin-top: 1em;">
+            It pessimized the <strong class="highlight-red">machine running the query</strong>. Someone always pays at 2 AM.
+          </p>
+        </div>
+      </div>
+
+      <aside class="notes">
+        <p><strong>⏱️ (3:30 - 4:30) Core Takeaway & Paradigm Shift</strong></p>
+
+        <p>Here is the real flaw in "clean" query code: <strong>every abstraction is a Ruby wall that the query planner cannot see through</strong>.</p>
+
+        <p>PostgreSQL superpowers like <code>includes</code>, <code>eager_load</code>, CTEs, and window functions only work when the <strong>query remains whole</strong>.</p>
+
+        <p>Splitting logic across six tiny objects depletes the capabilities you bought PostgreSQL for in the first place.</p>
+
+        <p>Clean architecture optimized for the <strong>reader of the code</strong>, but heavily defeats the <strong>machine executing the work</strong>. Someone always pays for that—usually production, at 2 AM.</p>
+      </aside>
+    </section>
+
+    <!-- SLIDE 6: The Rules -->
+    <section>
+      <h2>The 3 Commandments</h2>
+
+      <div class="grid-3" style="margin-top: 1.5em;">
+
+        <!-- RULE 1 -->
+        <div class="commandment-card" style="border-top: 6px solid var(--accent-green);">
+          <div>
+            <span class="badge-number badge-green">RULE 01</span>
+            <h3 class="highlight-green" style="margin-bottom: 0.5em;">Fat Model, Rich Scopes</h3>
+            <p style="font-size: 1.05em; font-weight: 600; color: #c9d1d9;">
+              Keep query logic where PostgreSQL can see the entire execution graph.
+            </p>
+          </div>
+          <div class="do-dont-box" style="border-left: 4px solid var(--accent-green); margin-top: 1.5em;">
+            <span class="highlight-green">✓ Composite Scopes</span><br/>
+            <span class="highlight-green">✓ Chainable SQL Relations</span>
+          </div>
+        </div>
+
+        <!-- RULE 2 -->
+        <div class="commandment-card" style="border-top: 6px solid var(--accent-yellow);">
+          <div>
+            <span class="badge-number badge-yellow">RULE 02</span>
+            <h3 class="highlight-yellow" style="margin-bottom: 0.5em;">Push Work to Postgres</h3>
+            <p style="font-size: 1.05em; font-weight: 600; color: #c9d1d9;">
+              Let C do set math. Stop pulling thousands of rows into Ruby memory.
+            </p>
+          </div>
+          <div class="do-dont-box" style="border-left: 4px solid var(--accent-yellow); margin-top: 1.5em;">
+            <span class="highlight-yellow">⚡ CTEs & Window Functions</span><br/>
+            <span class="highlight-yellow">⚡ Scenic Materialized Views</span>
+          </div>
+        </div>
+
+        <!-- RULE 3 -->
+        <div class="commandment-card" style="border-top: 6px solid var(--accent-red);">
+          <div>
+            <span class="badge-number badge-red">RULE 03</span>
+            <h3 class="highlight-red" style="margin-bottom: 0.3em;">Side-Effects Only</h3>
+            <p style="font-size: 1.05em; font-weight: 600; color: #c9d1d9;">
+              Limit Service Objects to external orchestration—never as SQL wrappers.
+            </p>
+          </div>
+          <div class="do-dont-box" style="border-left: 4px solid var(--accent-red); margin-top: 1.5em;">
+            <span class="highlight-green">✓ Stripe / Emails / BG Jobs</span><br/>
+            <span class="highlight-red">🛑 NO <code style="color:var(--accent-red);">find</code> or <code style="color:var(--accent-red);">sum</code> wrappers</span>
+          </div>
+        </div>
+
+      </div>
+
+      <aside class="notes">
+        <p><strong>⏱️ (4:30 - 5:20) Practical Rules</strong></p>
+
+        <p>I am not anti-abstraction. I am anti-abstracting the <strong>one engine your application relies on most</strong>.</p>
+
+        <p><strong>Rule 1:</strong> Keep query logic in models so PostgreSQL sees the full execution graph.</p>
+
+        <p><strong>Rule 2:</strong> Let C handle set operations—stop fetching thousands of Active Record instances into Ruby memory just to run <code>.select</code> or <code>.map</code>.</p>
+
+        <p><strong>Rule 3:</strong> Reserve Service Objects strictly for side effects—Stripe payments, sending emails, external API calls. They are <strong>not a witness protection program for SQL queries</strong>!</p>
+      </aside>
+    </section>
+
+    <!-- SLIDE 7: Close & Speaker Profile -->
+    <section>
+      <div style="width: 100%; max-width: 1600px; margin: 0 auto;">
+
+        <!-- TOP TAKEAWAY BANNER -->
+        <div style="margin-bottom: 1.2em; text-align: center;">
+          <h2 style="font-size: 3.2em; line-height: 1.2; margin-bottom: 0.2em;">
+            Make it <span class="highlight-blue">correct</span>. <br />
+            Make it <span class="highlight-green">fast</span>. <br />
+            THEN make it <span class="highlight-yellow">pretty</span>.
+          </h2>
+          <p class="highlight-red" style="font-size: 2em; font-weight: 800; margin: 0;">
+            In that exact order.
+          </p>
+        </div>
+
+        <!-- PROFILE & QR CODE CONTAINER GRID -->
+        <div class="card" style="padding: 0.8rem 2.2rem; background: #161b22; border: 2px solid #30363d;">
+          <div style="display: grid; grid-template-columns: 220px 1fr 200px; gap: 2rem; align-items: center; text-align: left;">
+
+            <!-- SPEAKER PHOTO -->
+            <div style="position: relative; text-align: center;">
+              <img src="https://media.licdn.com/dms/image/v2/D4E03AQEIFkPl_9fI_A/profile-displayphoto-crop_800_800/B4EZ5xmSBoK8AI-/0/1780022321501?e=1791417600&v=beta&t=jXgkhBQjUGnFrdOrkITXT6sDAOXduID3fa8d8SZfLfU"
+                   alt="Raj Kumar"
+                   style="width: 200px; height: 200px; border-radius: 50%; object-fit: cover; border: 4px solid var(--accent-blue); box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+            </div>
+
+            <!-- SPEAKER BIO & DETAILS -->
+            <div style="display: flex; flex-direction: column; justify-content: center;">
+              <h3 style="font-size: 1.8em; margin: 0 0 0.1em 0;" class="highlight-yellow">Raj Kumar</h3>
+              <p class="highlight-blue" style="font-size: 1.1em; font-weight: 600; margin: 0 0 0.6em 0;">Tech Lead | Sycamore Informatics, Inc.</p>
+            </div>
+
+            <!-- LINKEDIN QR CODE -->
+            <div style="text-align: center; background: #ffffff; padding: 0.8rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+              <img src="https://i.ibb.co/9HgMSt2f/LI-QR.jpg"
+                   alt="LinkedIn QR Code"
+                   style="width: 170px; height: 170px; object-fit: contain; display: block; margin: 0 auto;">
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <aside class="notes">
+        <p><strong>⏱️ (5:20 - 6:00) Call to Action & Conclusion</strong></p>
+
+        <p>When you return to work, open your <code>app/services</code> directory. Find classes like <code>RecordFetcher</code> or <code>DataAggregator</code>.</p>
+
+        <p>Open your SQL logs alongside them and inspect what they actually execute under load.</p>
+
+        <p>Refactor those queries back onto the Active Record model where PostgreSQL can see the <strong>entire execution graph</strong>.</p>
+
+        <p>Your Ruby abstractions might look slightly less beautiful... but your <code>EXPLAIN ANALYZE</code> output will look <strong>gorgeous</strong>.</p>
+
+        <p>Make it <strong>correct</strong>. Make it <strong>fast</strong>. THEN make it <strong>pretty</strong>—in that exact order.</p>
+
+        <p>Stop writing queries that read well—start writing queries that <strong>RUN well</strong>. Thank you!</p>
+      </aside>
+    </section>
+
+  </div>
+</div>
+
+<!-- Reveal.js & Highlight.js Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/plugin/notes/notes.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/plugin/highlight/highlight.min.js"></script>
+
+<script>
+  Reveal.initialize({
+    // Standard 16:9 Widescreen Canvas Resolution
+    width: 1920,
+    height: 1080,
+    margin: 0.05,
+    minScale: 0.2,
+    maxScale: 2.0,
+
+    hash: true,
+    slideNumber: 'c/t',
+    controls: true,
+    progress: true,
+    center: true, // Enables Reveal.js native vertical centering
+    transition: 'fade',
+    plugins: [ RevealNotes, RevealHighlight ]
+  });
+</script>
+
+</body>
+</html>
